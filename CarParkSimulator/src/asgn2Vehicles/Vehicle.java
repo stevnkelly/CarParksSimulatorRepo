@@ -46,6 +46,9 @@ public abstract class Vehicle {
 	
 	private String VehicleID;
 	private int ArrivalTime;
+	private int ParkingTime;
+	private int IntendedDuration;
+	
 	/**
 	 * Vehicle Constructor 
 	 * @param vehID String identification number or plate of the vehicle
@@ -71,6 +74,21 @@ public abstract class Vehicle {
 	 *         or if intendedDuration is less than the minimum prescribed in asgnSimulators.Constants
 	 */
 	public void enterParkedState(int parkingTime, int intendedDuration) throws VehicleException {
+		if (parkingTime <= 0) {
+			throw new VehicleException("Parking time must be greater than zero.");
+		} 
+		if (true /*vehicle already parked*/) {
+			throw new VehicleException("Vehicle is already parked.");
+		}
+		if (true /*vehicle in queued state*/) {
+			throw new VehicleException("Vehicle is already Queued.");
+		}
+		if (true /*intendedDuration < minimum*/) {
+			throw new VehicleException("Intended duration is less than minimum.");
+		}
+		
+		ParkingTime = parkingTime;
+		IntendedDuration = intendedDuration;
 	}
 	
 	/**
