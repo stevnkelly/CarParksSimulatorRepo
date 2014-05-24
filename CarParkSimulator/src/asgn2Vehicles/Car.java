@@ -46,7 +46,7 @@ public class Car extends Vehicle {
 		if (this.small == true) {
 			return true;
 		} else {
-			return false; //asdf
+			return false; 
 		}
 	}
 

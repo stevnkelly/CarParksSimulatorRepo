@@ -70,6 +70,11 @@ public class CarPark {
 	 * @throws SimulationException if one or more departing vehicles are not in the car park when operation applied
 	 */
 	public void archiveDepartingVehicles(int time,boolean force) throws VehicleException, SimulationException {
+		// - Podcast 1
+		//when you are iterating through the list of cars you need to be careful because the iterator cannot change 
+		//values. You can use a for loop and index directly, or you can make a copy.
+		//exception throwers are coming from either underlying methods, or from car park. propagating exceptions upwards. if vague
+		//it means not coming from this method. not in the car park = physical check which is responsibility of car park.
 	}
 		
 	/**
@@ -87,6 +92,19 @@ public class CarPark {
 	 * @throws VehicleException if one or more vehicles not in the correct state or if timing constraints are violated
 	 */
 	public void archiveQueueFailures(int time) throws VehicleException {
+		// - Podcast 1
+		//maintain que, maintain failures
+		//concerned with archive, concerned with que
+		//in carpark manage physical management of vehicles - the data structure
+		//also manage the vehicle state so that when we come back we can look at the vehicle and 
+		//see when it arrived, queued, whether it left the que, and if it was successfully parked for how long.
+		//checking to see if the queue is empty, if not keep looking at the elements until we have exausted 
+		//those which are staying too long. when it exceeds the maximum queueu time it is time to be archived.
+		//we change thier state by calling exitQueuedState. if we find a vehicle which is in the que for too long
+		//we put it in the archive, and change its internal state. 
+		//queue is a que, ordered, when you reach a vehicle in the que which hasnt been there too long, no need to
+		//look any further (queueu is first in first out).
+		//
 	}
 	
 	/**
@@ -244,6 +262,18 @@ public class CarPark {
 	 * @throws VehicleException if state is incorrect, or timing constraints are violated
 	 */
 	public void processQueue(int time, Simulator sim) throws VehicleException, SimulationException {
+		// - podcast 2
+		//if spaces park the first in the queue.
+		//if no spaces for the vehicle, then the queue is blocked and we exit.
+		//decisions are based on the first element.
+		//calls park vehicle method
+		//exit queued state <-- where exceptions come from
+		//use private method to check if spaces are available - respect constraints of small cars and 
+		//motorcycles. - number of car spaces available is number avail in general pool + small pool.
+		//small car spaces arent avail to bigger vehicles.
+		//similarly with motorcycles you can fit in small car spaces.
+		//can park small car in general vehicle pool.
+		
 	}
 
 	/**
@@ -285,6 +315,9 @@ public class CarPark {
 	 * @throws VehicleException if vehicle creation violates constraints 
 	 */
 	public void tryProcessNewVehicles(int time,Simulator sim) throws VehicleException, SimulationException {
+		//test to see if you can create a new car - relies on facilities from the simulator class.
+		//then process the new vehicle <-- private method - test to see if space available, if not in queue
+		//if no space in queue then the new vehicle goes straight into archive.
 	}
 
 	/**

@@ -155,6 +155,7 @@ public abstract class Vehicle {
 	 */
 	public String getVehID() {
 		return VehicleID;
+		
 	}
 
 	/**
@@ -191,13 +192,11 @@ public abstract class Vehicle {
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
-	
-	/*
 	@Override
 	public String toString() {
-		
+		//what?
 	}
-	*/
+	
 
 	/**
 	 * Boolean status indicating whether vehicle was ever parked

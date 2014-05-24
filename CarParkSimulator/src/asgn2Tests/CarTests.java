@@ -23,6 +23,9 @@ import org.junit.Test;
  */
 public class CarTests {
 	Car TestCar;
+	int parkingTime = 1;
+	int intendedDuration = 1;
+	int departureTime = 1;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -62,5 +65,58 @@ public class CarTests {
 	public void testIsSmall() {
 		assertEquals(TestCar.isSmall(), true);	
 	}
+
+	/*********************
+	 * TESTING PARKING
+	 ********************/	
+	
+	@Test //is parked
+	public void testEnterParkedState() throws Exception {
+		TestCar.enterParkedState(parkingTime,  intendedDuration);
+		assertEquals(TestCar.isParked(), true);
+	}
+	
+	@Test //was parked
+	public void testWasParked() throws Exception {
+		TestCar.enterParkedState(parkingTime,  intendedDuration);
+		assertEquals(TestCar.wasParked(), true);
+	}
+	
+	@Test //parking time
+	public void testParkingTime() throws Exception {
+		TestCar.enterParkedState(parkingTime,  intendedDuration);
+		assertEquals(TestCar.getParkingTime(), parkingTime);
+	}
+	
+	@Test //exit parking
+	public void testExitParking() throws Exception {
+		TestCar.exitParkedState(departureTime);
+		assertEquals(TestCar.isParked(), false);
+	}
+	
+	@Test //parking duration
+	public void testIntendedDuration() throws Exception {
+		TestCar.enterParkedState(parkingTime,  intendedDuration);
+		assertEquals(TestCar.getDepartureTime(), intendedDuration);
+	}
+
+	/*********************
+	 * TESTING QUES
+	 ********************/
+	
+	@Test //is queued
+	public void testEnterQueuedState() throws Exception {
+		TestCar.enterQueuedState();
+		assertEquals(TestCar.isQueued(), true);
+	}
+	
+	@Test //was queued
+	public void testWasQueued() throws Exception {
+		TestCar.enterQueuedState();
+		assertEquals(TestCar.wasQueued(), true);
+	}
+	
+	
+	
 
 }
