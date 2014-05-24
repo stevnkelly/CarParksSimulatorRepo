@@ -22,7 +22,6 @@ import org.junit.Test;
  *
  */
 public class CarTests {
-	
 	Car TestCar;
 	
 	/**
@@ -30,7 +29,7 @@ public class CarTests {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		TestCar = new Car("abc1", 1, true);
+		
 	}
 
 	/**
@@ -60,10 +59,10 @@ public class CarTests {
 	 * Test method for {@link asgn2Vehicles.Car#isSmall()}.
 	 */
 	@Test
-	public void testIsSmall() {
-		
-		
-		fail("Not yet implemented"); // TODO
+	public void testIsSmall() throws Exception {
+		TestCar = new Car("abc1", 1, true);
+		assertEquals(TestCar.isSmall(), true);	
+		//fail("Not yet implemented"); // TODO 
 	}
 
 }
