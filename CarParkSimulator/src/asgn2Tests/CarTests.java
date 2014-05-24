@@ -29,7 +29,7 @@ public class CarTests {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		
+		TestCar = new Car("abc1", 1, true);
 	}
 
 	/**
@@ -52,17 +52,15 @@ public class CarTests {
 	 */
 	@Test
 	public void testCar() {
-		fail("Not yet implemented"); // TODO
+		assertNotNull(TestCar);
 	}
 
 	/**
 	 * Test method for {@link asgn2Vehicles.Car#isSmall()}.
 	 */
 	@Test
-	public void testIsSmall() throws Exception {
-		TestCar = new Car("abc1", 1, true);
+	public void testIsSmall() {
 		assertEquals(TestCar.isSmall(), true);	
-		//fail("Not yet implemented"); // TODO 
 	}
 
 }
