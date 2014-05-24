@@ -9,6 +9,7 @@
  * 
  */
 package asgn2Tests;
+import asgn2Vehicles.*;
 
 import static org.junit.Assert.*;
 
@@ -21,12 +22,15 @@ import org.junit.Test;
  *
  */
 public class CarTests {
-
+	
+	Car TestCar;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		TestCar = new Car("abc1", 1, true);
 	}
 
 	/**
@@ -57,6 +61,8 @@ public class CarTests {
 	 */
 	@Test
 	public void testIsSmall() {
+		
+		
 		fail("Not yet implemented"); // TODO
 	}
 
