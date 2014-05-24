@@ -100,7 +100,7 @@ public class CarTests {
 	}
 
 	/*********************
-	 * TESTING QUES
+	 * TESTING QUEING
 	 * @author Steven
 	 ********************/
 	
