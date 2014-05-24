@@ -44,6 +44,8 @@ import asgn2Simulators.Constants;
  */
 public abstract class Vehicle {
 	
+	private String VehicleID;
+	private int ArrivalTime;
 	/**
 	 * Vehicle Constructor 
 	 * @param vehID String identification number or plate of the vehicle
@@ -51,7 +53,12 @@ public abstract class Vehicle {
 	 *        either queued, given entry to the car park or forced to leave
 	 * @throws VehicleException if arrivalTime is <= 0 
 	 */
-	public Vehicle(String vehID,int arrivalTime) throws VehicleException  {
+	public Vehicle(String vehID, int arrivalTime) throws VehicleException  {
+		if (arrivalTime <= 0) {
+			throw new VehicleException("Arrival time must be greater than zero.");
+		}
+		VehicleID = vehID;
+		ArrivalTime = arrivalTime;
 	}
 
 	/**
