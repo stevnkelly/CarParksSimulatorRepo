@@ -22,52 +22,57 @@ import org.junit.Test;
  *
  */
 public class CarTests {
+	
+	/************************
+	 * SETTING UP VARIABLES
+	 * @author Steven
+	 ***********************/	
+	
 	Car TestCar;
 	int parkingTime = 1;
 	int intendedDuration = 1;
 	int departureTime = 1;
+	int arrivalTime = 1;
+	String vehID = "abc";
+	boolean isSmall = true;
 	
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@Before
 	public void setUp() throws Exception {
-		TestCar = new Car("abc1", 1, true);
+		TestCar = new Car(vehID, arrivalTime, isSmall);
 	}
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@After
 	public void tearDown() throws Exception {
 	}
 
-	/**
-	 * Test method for {@link asgn2Vehicles.Car#toString()}.
-	 */
-	@Test
-	public void testToString() {
-		fail("Not yet implemented"); // TODO
-	}
+	/************************
+	 * CONSTRUCTOR TESTS
+	 * @author Steven
+	 ***********************/	
 
-	/**
-	 * Test method for {@link asgn2Vehicles.Car#Car(java.lang.String, int, boolean)}.
-	 */
-	@Test
+	@Test //constructed
 	public void testCar() {
 		assertNotNull(TestCar);
 	}
+	
+	@Test //arrival time
+	public void testGetArrivalTime() {
+		assertEquals(TestCar.getArrivalTime(), arrivalTime);
+	}
+	
+	@Test //get vehicle ID
+	public void testGetVehID() {
+		assertEquals(TestCar.getVehID(), vehID);
+	}
 
-	/**
-	 * Test method for {@link asgn2Vehicles.Car#isSmall()}.
-	 */
-	@Test
+	@Test //is small
 	public void testIsSmall() {
 		assertEquals(TestCar.isSmall(), true);	
 	}
 
 	/*********************
 	 * TESTING PARKING
+	 * @author Steven
 	 ********************/	
 	
 	@Test //is parked
@@ -93,15 +98,10 @@ public class CarTests {
 		TestCar.exitParkedState(departureTime);
 		assertEquals(TestCar.isParked(), false);
 	}
-	
-	@Test //parking duration
-	public void testIntendedDuration() throws Exception {
-		TestCar.enterParkedState(parkingTime,  intendedDuration);
-		assertEquals(TestCar.getDepartureTime(), intendedDuration);
-	}
 
 	/*********************
 	 * TESTING QUES
+	 * @author Steven
 	 ********************/
 	
 	@Test //is queued
@@ -116,7 +116,23 @@ public class CarTests {
 		assertEquals(TestCar.wasQueued(), true);
 	}
 	
+	@Test //exit queue
+	public void testExitQueue() throws Exception {
+		TestCar.exitQueuedState(departureTime);
+		assertEquals(TestCar.isQueued(), false);
+	}
 	
+	/*******************
+	 * OTHER TESTS
+	 ******************/
+	
+	@Test //toString    <--- I dont know why toString is overloaded?
+	public void testToString() {
+		fail("Not yet implemented"); // TODO
+	}
+	
+	//test departure time
+	//test isSatisfied
 	
 
 }
