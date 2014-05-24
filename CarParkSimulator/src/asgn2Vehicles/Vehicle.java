@@ -47,6 +47,7 @@ public abstract class Vehicle {
 	private String VehicleID;
 	private int ArrivalTime;
 	private int ParkingTime;
+	private int DepartureTime;
 	private int IntendedDuration;
 	private char State;
 	
@@ -126,6 +127,7 @@ public abstract class Vehicle {
 	 * @return the arrivalTime
 	 */
 	public int getArrivalTime() {
+		return ArrivalTime;
 	}
 	
 	/**
@@ -135,6 +137,7 @@ public abstract class Vehicle {
 	 * @return the departureTime
 	 */
 	public int getDepartureTime() {
+		return DepartureTime;
 	}
 	
 	/**
@@ -143,6 +146,7 @@ public abstract class Vehicle {
 	 * @return the parkingTime
 	 */
 	public int getParkingTime() {
+		return ParkingTime;
 	}
 
 	/**
@@ -150,6 +154,7 @@ public abstract class Vehicle {
 	 * @return the vehID
 	 */
 	public String getVehID() {
+		return VehicleID;
 	}
 
 	/**
@@ -157,6 +162,11 @@ public abstract class Vehicle {
 	 * @return true if the vehicle is in a parked state; false otherwise
 	 */
 	public boolean isParked() {
+		if (State == 'P') {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -164,6 +174,7 @@ public abstract class Vehicle {
 	 * @return true if vehicle is in a queued state, false otherwise 
 	 */
 	public boolean isQueued() {
+		return true;
 	}
 	
 	/**
@@ -174,14 +185,19 @@ public abstract class Vehicle {
 	 * @return true if satisfied, false if never in parked state or if queuing time exceeds max allowable 
 	 */
 	public boolean isSatisfied() {
+		return true;
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
+	
+	/*
 	@Override
 	public String toString() {
+		
 	}
+	*/
 
 	/**
 	 * Boolean status indicating whether vehicle was ever parked
@@ -189,6 +205,7 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a parked state, false otherwise 
 	 */
 	public boolean wasParked() {
+		return true;
 	}
 
 	/**
@@ -196,5 +213,6 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a queued state, false otherwise 
 	 */
 	public boolean wasQueued() {
+		return true;
 	}
 }
