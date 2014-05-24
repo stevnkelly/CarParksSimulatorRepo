@@ -48,6 +48,7 @@ public abstract class Vehicle {
 	private int ArrivalTime;
 	private int ParkingTime;
 	private int IntendedDuration;
+	private char State;
 	
 	/**
 	 * Vehicle Constructor 
@@ -77,16 +78,17 @@ public abstract class Vehicle {
 		if (parkingTime <= 0) {
 			throw new VehicleException("Parking time must be greater than zero.");
 		} 
-		if (true /*vehicle already parked*/) {
+		if (State == 'P') {
 			throw new VehicleException("Vehicle is already parked.");
 		}
-		if (true /*vehicle in queued state*/) {
+		if (State == 'Q') {
 			throw new VehicleException("Vehicle is already Queued.");
 		}
-		if (true /*intendedDuration < minimum*/) {
+		if (State == 'X' /*intendedDuration < minimum*/) {
 			throw new VehicleException("Intended duration is less than minimum.");
 		}
 		
+		State = 'P';
 		ParkingTime = parkingTime;
 		IntendedDuration = intendedDuration;
 	}
