@@ -10,8 +10,13 @@
  */
 package asgn2Vehicles;
 
+
 import asgn2Exceptions.VehicleException;
 import asgn2Simulators.Constants;
+import java.util.*;
+
+
+
 
 
 
@@ -43,21 +48,24 @@ import asgn2Simulators.Constants;
  *
  */
 public abstract class Vehicle {
-	
+
+
 	private String VehicleID;
 	private int ArrivalTime;
 	private int ParkingTime;
+	private int QueueingTime;
 	private int DepartureTime;
 	private int IntendedDuration;
 	private char State;
 	private boolean WasParked;
 	private boolean WasQueued;
 	private boolean isSatisfied = false;
-	
+
+
 	/**
 	 * Vehicle Constructor 
 	 * @param vehID String identification number or plate of the vehicle
-	 * @param arrivalTime int time (minutes) at which the vehicle arrives and is 
+	 * @param arrivalTime time (minutes) at which the vehicle arrives and is 
 	 *        either queued, given entry to the car park or forced to leave
 	 * @throws VehicleException if arrivalTime is <= 0 
 	 */
@@ -69,6 +77,7 @@ public abstract class Vehicle {
 		ArrivalTime = arrivalTime;
 		State = 'N'; //new car is in a neutral state.
 	}
+
 
 	/**
 	 * Transition vehicle to parked state (mutator)
@@ -101,7 +110,8 @@ public abstract class Vehicle {
 			isSatisfied = true;
 		}
 	}
-	
+
+
 	/**
 	 * Transition vehicle to queued state (mutator) 
 	 * Queuing formally starts on arrival and ceases with a call to {@link #exitQueuedState(int) exitQueuedState}
@@ -115,7 +125,8 @@ public abstract class Vehicle {
 		WasQueued = true;
 		isSatisfied = true;
 	}
-	
+
+
 	/**
 	 * Transition vehicle from parked state (mutator) 
 	 * @param departureTime int holding the actual departure time 
@@ -132,6 +143,7 @@ public abstract class Vehicle {
 			DepartureTime = departureTime;
 		}
 	}
+
 
 	/**
 	 * Transition vehicle from queued state (mutator) 
@@ -158,8 +170,10 @@ public abstract class Vehicle {
 				isSatisfied = true;
 			}*/
 		}
+		//this.QueueingTime = now - this.ArrivalTime; 
 	}
-	
+
+
 	/**
 	 * Simple getter for the arrival time 
 	 * @return the arrivalTime
@@ -167,7 +181,8 @@ public abstract class Vehicle {
 	public int getArrivalTime() {
 		return ArrivalTime;
 	}
-	
+
+
 	/**
 	 * Simple getter for the departure time from the car park
 	 * Note: result may be 0 before parking, show intended departure 
@@ -177,7 +192,8 @@ public abstract class Vehicle {
 	public int getDepartureTime() {
 		return DepartureTime;
 	}
-	
+
+
 	/**
 	 * Simple getter for the parking time
 	 * Note: result may be 0 before parking
@@ -187,14 +203,15 @@ public abstract class Vehicle {
 		return ParkingTime;
 	}
 
+
 	/**
 	 * Simple getter for the vehicle ID
 	 * @return the vehID
 	 */
 	public String getVehID() {
 		return VehicleID;
-		
 	}
+
 
 	/**
 	 * Boolean status indicating whether vehicle is currently parked 
@@ -208,6 +225,7 @@ public abstract class Vehicle {
 		}
 	}
 
+
 	/**
 	 * Boolean status indicating whether vehicle is currently queued
 	 * @return true if vehicle is in a queued state, false otherwise 
@@ -219,7 +237,8 @@ public abstract class Vehicle {
 			return false;
 		}
 	}
-	
+
+
 	/**
 	 * Boolean status indicating whether customer is satisfied or not
 	 * Satisfied if they park; dissatisfied if turned away, or queuing for too long 
@@ -231,16 +250,47 @@ public abstract class Vehicle {
 		return isSatisfied;
 	}
 
-	
+
+
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		//what do they want us to do?
-		return "todo";
+		StringBuilder result = new StringBuilder();
+	    String NEW_LINE = System.getProperty("line.separator");
+
+
+	    result.append("is a vehicle with an ID of " + this.VehicleID + NEW_LINE);
+
+
+	    if(this.isSatisfied){
+	    	if(this.WasQueued){
+	    		result.append("Vehicle was queued at " + ArrivalTime+NEW_LINE);
+	    	} else {
+	    		result.append("Vehicle skipped the queue and instead ");
+	    	}
+	    	result.append("Vehicle was parked at " + this.ParkingTime + NEW_LINE);
+	    	result.append("Vehicle left the park at " + this.DepartureTime + " after " + this.IntendedDuration);
+	    	result.append(" for a total stay of " + this.ParkingTime + NEW_LINE);
+	    	result.append("Overall, customer was satisfied" + NEW_LINE);
+	    } else {
+	    	if(this.WasQueued){
+	    		result.append("Vehicle was queued at " + ArrivalTime);
+	    		result.append(", however after " + this.IntendedDuration + " the customer left the queue after " + this.QueueingTime + NEW_LINE);
+	    	} else {
+	    		result.append("Queue was full at " + this.ArrivalTime + ", when customer arrived"+ NEW_LINE);
+	    	}
+	    	result.append("Overall, customer was unsatisfied" + NEW_LINE);
+	    }
+
+
+	    return result.toString();
 	}
-	
+
+
+
 
 	/**
 	 * Boolean status indicating whether vehicle was ever parked
@@ -250,6 +300,7 @@ public abstract class Vehicle {
 	public boolean wasParked() {
 		return WasParked;
 	}
+
 
 	/**
 	 * Boolean status indicating whether vehicle was ever queued

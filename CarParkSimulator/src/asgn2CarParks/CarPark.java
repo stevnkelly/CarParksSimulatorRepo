@@ -40,6 +40,19 @@ import asgn2Vehicles.Vehicle;
  */
 public class CarPark {
 
+	private Vehicle carArray[];
+	private Vehicle smallCarArray[];
+	private Vehicle bikeArray[];
+	
+	private String vehicleType;
+	private int numCarsParked = 0;
+	private int numSmallCarsParked = 0;
+	private int numBikesParked = 0;
+	
+	private int maxSpaces = Constants.DEFAULT_MAX_CAR_SPACES; //100
+	private int maxSmallCarSpaces = Constants.DEFAULT_MAX_SMALL_CAR_SPACES; // = 20;
+	private int maxMotorCycleSpaces = Constants.DEFAULT_MAX_MOTORCYCLE_SPACES;// = 20;
+	private int maxQueueSize = Constants.DEFAULT_MAX_QUEUE_SIZE; // = 10;
 	
 	/**
 	 * CarPark constructor sets the basic size parameters. 
@@ -59,6 +72,9 @@ public class CarPark {
 	 * @param maxQueueSize maximum number of vehicles allowed to queue
 	 */
 	public CarPark(int maxCarSpaces,int maxSmallCarSpaces, int maxMotorCycleSpaces, int maxQueueSize) {
+		carArray = new Vehicle[maxCarSpaces];
+		smallCarArray = new Vehicle[maxSmallCarSpaces];
+		bikeArray = new Vehicle[maxMotorCycleSpaces];
 	}
 
 	/**
@@ -119,6 +135,38 @@ public class CarPark {
 	 * @return true if car park full, false otherwise
 	 */
 	public boolean carParkFull() {
+		if (carsFull() && smallCarsFull() && bikesFull()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	//car spaces full?
+	private boolean carsFull() {
+		if (carArray.length == maxSpaces) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	//small car spaces full?
+	private boolean smallCarsFull() {
+		if (smallCarArray.length == maxSmallCarSpaces) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	//bikes spaces full?
+	private boolean bikesFull() {
+		if (bikeArray.length == maxMotorCycleSpaces) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	/**
@@ -251,6 +299,34 @@ public class CarPark {
 	 * @throws VehicleException if vehicle not in the correct state or timing constraints are violated
 	 */
 	public void parkVehicle(Vehicle v, int time, int intendedDuration) throws SimulationException, VehicleException {
+		vehicleType = getVehicleType(v);
+		Vehicle currentVehicle = v;
+        switch (vehicleType) {
+            case "C":
+            	carArray[numCarsParked]=(currentVehicle);
+            	numCarsParked += 1; 
+            	break;
+            case "S":
+            	carArray[numSmallCarsParked]=(currentVehicle);
+            	numSmallCarsParked += 1; 
+                break;
+            case "M":
+            	carArray[numBikesParked]=(currentVehicle);
+            	numBikesParked += 1; 
+                break;
+        }
+	}
+	
+	/**
+	 * Helper method to extract the vehicle type from a vehicle object. Type is set in the vehicle id when the vehicle is
+	 * created.
+	 * @param v vehicle to get type of
+	 * @return vehicle type as string
+	 * @author Steven
+	 */
+	private String getVehicleType(Vehicle v) {
+		String vehicleType = v.getVehID().substring(1, 2);
+		return vehicleType;
 	}
 
 	/**
