@@ -42,7 +42,9 @@ public class CarParkTests {
 	
 	private int arrivalTime = 1;
 	private int exitTime = 1;
-	private String vehID = "abc";
+	private String carVehID = "C11";
+	private String smallCarVehID = "S22";
+	private String bikeVehID = "M33";
 	private Boolean isSmall = true;
 	private Boolean isLarge = false;
 	private int time = 60;
@@ -58,9 +60,9 @@ public class CarParkTests {
 	public void setUp() throws Exception {
 		testCarPark = new CarPark();
 		testSimulator = new Simulator();
-		testCar = new Car(vehID, arrivalTime, isLarge);
-		testSmallCar = new Car(vehID, arrivalTime, isSmall);
-		testBike = new MotorCycle(vehID, arrivalTime);
+		testCar = new Car(carVehID, arrivalTime, isLarge);
+		testSmallCar = new Car(smallCarVehID, arrivalTime, isSmall);
+		testBike = new MotorCycle(bikeVehID, arrivalTime);
 	}
 
 	@After
@@ -69,7 +71,7 @@ public class CarParkTests {
 
 	///////////////////////
 	// CONSTRUCTOR TESTS
-	//////////////////////
+	///////////////////////
 	
 	/**
 	 * test that a CarPark is correctly constructed with default values;
@@ -79,14 +81,47 @@ public class CarParkTests {
 	 */
 	@Test 
 	public void carParkConstructed() throws SimulationException, VehicleException {
-		fillNormalSpaces();
-		fillSmallSpaces();
-		fillBikeSpaces();
-		assertTrue("This test fills the carpark to capacity, carParkFull should return"
-				+ "true", testCarPark.carParkFull());
+		fillCarPark();
+		//assertTrue("This test fills the carpark to capacity, carParkFull should return"
+		//		+ "true", testCarPark.carParkFull());
+		assertEquals(testCarPark.carParkFull(), true);
 	}
 	
-	//test handing teh constructor negatives and zeros? constructor has no exception handler.
+	/////////////////////
+	// PARK VEHICLES
+	/////////////////////
+	 // @throws SimulationException if no suitable spaces are available for parking 
+	 // @throws VehicleException if vehicle not in the correct state or timing constraints are violated
+	
+	/**
+	 * Test exception handling if no spaces are available.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 */
+	@Test(expected = SimulationException.class)
+	public void parkVehiclesExceptionNoSpaces() throws SimulationException, VehicleException {
+		fillCarPark();
+		testCarPark.parkVehicle(testCar, time, intendedDuration);
+	}
+	
+	/**
+	 * Test exception handling if no spaces are available.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 */
+	@Test(expected = VehicleException.class)
+	public void parkVehiclesExceptionAlreadyParked() throws SimulationException, VehicleException {
+		testCarPark.parkVehicle(testCar, time, intendedDuration);
+		testCarPark.parkVehicle(testCar, time, intendedDuration);
+	}
+	
+ 
+	
+	///////////////////////////
+	// ARCHIVE DEPARTING VEHICLE
+	///////////////////////////
 	
 	/**
 	 * Expects an exception when archiving a vehicle in the incorrect state.
@@ -108,9 +143,54 @@ public class CarParkTests {
 		
 	}
 	
+	//////////////////////////
+	// SIMPLE GETTERS
+	///////////////////////
+	
+	/**
+	 * checks to see that getNumCars correctly performs addition of normal, small, and bikes.
+	 * @author Steven
+	 */
+	@Test
+	public void getNumCars() throws SimulationException, VehicleException {
+		testCarPark.parkVehicle(testCar, arrivalTime, intendedDuration);
+		int numCars = testCarPark.getNumCars();
+		assertEquals(numCars, 1);
+	}
+	
+	/**
+	 * checks to see that getNumCars correctly performs addition of normal, small, and bikes.
+	 * @author Steven
+	 */
+	@Test
+	public void getNumSmallCars() throws SimulationException, VehicleException {
+		testCarPark.parkVehicle(testSmallCar, arrivalTime, intendedDuration);
+		int numSmallCars = testCarPark.getNumSmallCars();
+		assertEquals(numSmallCars, 1);
+	}
+	
+	/**
+	 * test numBikes
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author
+	 */
+	@Test
+	public void getNumMotorCycles() throws SimulationException, VehicleException {
+		testCarPark.parkVehicle(testBike, arrivalTime, intendedDuration);
+		int numBikes = testCarPark.getNumMotorCycles();
+		assertEquals(numBikes, 1);
+	}
+	
 	///////////////////////
 	// HELPER METHODS
 	///////////////////////
+	
+	private void fillCarPark() throws SimulationException, VehicleException {
+		fillNormalSpaces();
+		fillSmallSpaces();
+		fillBikeSpaces();
+	}
 	
 	/**
 	 * helper method to fill the normal car spaces with test cars
