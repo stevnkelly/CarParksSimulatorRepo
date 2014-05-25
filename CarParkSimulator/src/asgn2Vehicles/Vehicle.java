@@ -81,21 +81,22 @@ public abstract class Vehicle {
 	public void enterParkedState(int parkingTime, int intendedDuration) throws VehicleException {
 		if (parkingTime <= 0) {
 			throw new VehicleException("Parking time must be greater than zero.");
-		} 
-		if (State == 'P') {
+		} else if (State == 'P') {
 			throw new VehicleException("Vehicle is already parked.");
-		}
-		if (State == 'Q') {
+		} else if (State == 'Q') {
 			throw new VehicleException("Vehicle is already Queued.");
-		}
-		if (State == 'X' /*intendedDuration < minimum*/) {
+		} else if (intendedDuration < Constants.MINIMUM_STAY) {
 			throw new VehicleException("Intended duration is less than minimum.");
+		} else if (parkingTime <= 0) {
+			throw new VehicleException("parking time must be greater than 0");
+		} else if (intendedDuration <= 0) {
+			throw new VehicleException("intendedDuration must be greater than 0");
+		} else {		
+			State = 'P';
+			WasParked = true;
+			ParkingTime = parkingTime;
+			IntendedDuration = intendedDuration;
 		}
-		
-		State = 'P';
-		WasParked = true;
-		ParkingTime = parkingTime;
-		IntendedDuration = intendedDuration;
 	}
 	
 	/**
@@ -120,9 +121,12 @@ public abstract class Vehicle {
 	public void exitParkedState(int departureTime) throws VehicleException {
 		if (State != 'P') {
 			throw new VehicleException("Vehicle is not in a parked state.");
-		}		
-		State = 'A'; //enters archive state.
-		DepartureTime = departureTime;
+		} else if (departureTime <= 0) {
+			throw new VehicleException("Exit time must be greater than 0");
+		} else {
+			State = 'A'; //enters archive state.
+			DepartureTime = departureTime;
+		}
 	}
 
 	/**
@@ -134,6 +138,14 @@ public abstract class Vehicle {
 	 *  exitTime is not later than arrivalTime for this vehicle
 	 */
 	public void exitQueuedState(int exitTime) throws VehicleException {
+		if (State != 'Q') {
+			throw new VehicleException("Vehicle is not in a Queued state.");
+		} else if (exitTime <= 0) {
+			throw new VehicleException("Exit time must be greater than 0");
+		} else {
+			State = 'A'; //enters archive state.
+			DepartureTime = exitTime;
+		}
 	}
 	
 	/**
@@ -209,6 +221,8 @@ public abstract class Vehicle {
 			return true;
 		} else if (longQueueTime() ) {
 			return false;
+		} else if (turnedAway()) {
+			return false;
 		} else {
 			return true;
 		}
@@ -219,11 +233,32 @@ public abstract class Vehicle {
 	 * @return true if the customer has been queued for too long.
 	 * @author Steven
 	 */
-	public boolean longQueueTime() {
-		if (State == 'Q') {
-			if (getArrivalTime() >= maxQueueTime) {
-				//TODO
-			}
+	private boolean longQueueTime() {
+		int arrival = this.getArrivalTime();
+		int depart = this.getDepartureTime();
+		int max = Constants.MAXIMUM_QUEUE_TIME;
+		
+		if (depart - arrival > max) {
+			return false;
+		} else {
+			return true;
+		}
+		
+	}
+	
+	/**
+	 * Boolean helper method to determine if a customer has been turned away.
+	 * @return true if the customer has been queued for too long.
+	 * @author Steven
+	 */
+	private boolean turnedAway() {
+		int arrival = this.getArrivalTime();
+		int depart = this.getDepartureTime();
+		
+		if (depart == arrival) {
+			return false;
+		} else {
+			return true;
 		}
 	}
 	
@@ -233,7 +268,7 @@ public abstract class Vehicle {
 	@Override
 	public String toString() {
 		//what do they want us to do?
-		//TODO
+		return "todo";
 	}
 	
 
@@ -243,7 +278,11 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a parked state, false otherwise 
 	 */
 	public boolean wasParked() {
-		return WasParked;
+		if (WasParked) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -251,6 +290,10 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a queued state, false otherwise 
 	 */
 	public boolean wasQueued() {
-		return WasQueued;
+		if (WasQueued) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
