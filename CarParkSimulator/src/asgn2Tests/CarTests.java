@@ -108,30 +108,86 @@ public class CarTests {
 	 *****************************/
 	
 	@Test(expected = VehicleException.class)
-	//enter parked state duration <= 0
+	//enter parked state duration <= 0 throws exception
 	public void testEnterParkedExceptionDurationZero() throws VehicleException {
 		TestCar.enterParkedState(0, intendedDuration);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//vehicle already parked
+	//vehicle already parked throws exception
 	public void testEnterParkedExceptionAlreadyParked() throws VehicleException {
 		TestCar.enterParkedState(parkingTime, intendedDuration);
 		TestCar.enterParkedState(parkingTime, intendedDuration);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//vehicle already queued.
+	//vehicle already queued throws exception
 	public void testEnterParkedExceptionAlreadyQueued() throws VehicleException {
 		TestCar.enterQueuedState();
 		TestCar.enterParkedState(parkingTime, intendedDuration);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//intended duration < minimum
+	//intended duration < minimum throws exception
 	public void testEnterParkedExceptionDurationMin() throws VehicleException {
-		
+		int min = Constants.MINIMUM_STAY;
+		TestCar.enterParkedState(parkingTime, min -1);
 	}
+	
+	/***
+	 * PARKING EXCEPTIONS FOR NEGATIVE INPUT
+	 * @author steven
+	 ***/
+	
+	@Test(expected = VehicleException.class)
+	//departing before arrival throws exception
+	public void testExitParkedExceptionNegativeDeparture() throws VehicleException {
+		int exit = -1;
+		TestCar = new Car(vehID, arrivalTime, isSmall);
+		TestCar.exitQueuedState(exit);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//enter parked state with negative parkingTime
+	public void testEnterParkedExceptionNegativeTime() throws VehicleException {
+		int time = -1;
+		TestCar.enterParkedState(time, intendedDuration);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//enter parked state with negative intendedDuration
+	public void testEnterParkedExceptionNegativeDuration() throws VehicleException {
+		int duration = -1;
+		TestCar.enterParkedState(parkingTime, duration);
+	}
+	
+	/***
+	 * PARKING EXCEPTIONS FOR 'ZERO' INPUT
+	 * @author Steven
+	 ***/
+	
+	@Test(expected = VehicleException.class)
+	//departing before arrival throws exception
+	public void testExitParkedExceptionZeroDeparture() throws VehicleException {
+		int exit = 0;
+		TestCar = new Car(vehID, arrivalTime, isSmall);
+		TestCar.exitQueuedState(exit);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//enter parked state with negative parkingTime
+	public void testEnterParkedExceptionZeroTime() throws VehicleException {
+		int time = 0;
+		TestCar.enterParkedState(time, intendedDuration);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//enter parked state with negative intendedDuration
+	public void testEnterParkedExceptionZeroDuration() throws VehicleException {
+		int duration = 0;
+		TestCar.enterParkedState(parkingTime, duration);
+	}
+	
 
 	/*********************
 	 * TESTING QUEING
@@ -176,20 +232,20 @@ public class CarTests {
 	}
 	
 	@Test(expected = VehicleException.class)
-	//exit queued when parked
+	//exit queued when parked throws exception
 	public void testExitQueuedAlreadyParked() throws VehicleException {
 		TestCar.enterParkedState(parkingTime, intendedDuration);
 		TestCar.exitQueuedState(exitTime);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//exit que when not queued
+	//exit que when not queued throws exception
 	public void testExitQueuedAlreadyQueued() throws VehicleException {
 		TestCar.exitQueuedState(exitTime);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//departing before arrival
+	//departing before arrival throws exception
 	public void testExitQueuedExitBeforeArrive() throws VehicleException {
 		int arrival = 300;
 		int exit = 299;
@@ -198,11 +254,18 @@ public class CarTests {
 	}
 	
 	@Test(expected = VehicleException.class)
-	//departing before arrival
+	//negative exit time throws exception
 	public void testExitQueuedNegativeDeparture() throws VehicleException {
-		int arrival = 300;
 		int exit = -1;
-		TestCar = new Car(vehID, arrival, isSmall);
+		TestCar = new Car(vehID, arrivalTime, isSmall);
+		TestCar.exitQueuedState(exit);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//zero exit time throws exception
+	public void testExitQueuedZeroDeparture() throws VehicleException {
+		int exit = 0;
+		TestCar = new Car(vehID, arrivalTime, isSmall);
 		TestCar.exitQueuedState(exit);
 	}
 	
@@ -210,21 +273,12 @@ public class CarTests {
 	 * OTHER TESTS
 	 ******************/
 	
-	@Test //toString    <--- I dont know why toString is overloaded?
-	public void testToString() {
-		fail("Not yet implemented"); // TODO
+	@Test //test departure time
+	public void testDepartureTime() {
+		int departure = arrivalTime + intendedDuration;
+		assertEquals(TestCar.getDepartureTime(), departure);
 	}
 	
-	
-	//test departure time
-	
-	/**
-	 * Boolean status indicating whether customer is satisfied or not
-	 * Satisfied if they park; dissatisfied if turned away, or queuing for too long 
-     * Vehicles begin in a satisfied state, but this may change over time
-	 * Note that calls to this method may not reflect final status 
-	 * @return true if satisfied, false if never in parked state or if queuing time exceeds max allowable 
-	 */
 	@Test
 	//vehicle turned away, driver is dissatisfied
 	public void testIsSatisfiedTurnedAway() throws VehicleException {
@@ -234,7 +288,7 @@ public class CarTests {
 	}
 	
 	@Test
-	//Queueing too long
+	//Queueing too long = dissatisfied
 	public void testIsSatisfiedQueueTooLong() throws VehicleException {
 		TestCar.enterQueuedState();
 		TestCar.exitQueuedState(Constants.MAXIMUM_QUEUE_TIME + 1);
