@@ -91,6 +91,8 @@ public class CarParkTests {
 	// PARK VEHICLES
 	/////////////////////
 
+	//park vehicle count incremented
+	//num bikes, cars, smallcars incremented
 	
 	/*********************************************
 	 * Test exception handling if no spaces are available.
@@ -131,29 +133,32 @@ public class CarParkTests {
 	// TRY PROCESS VEHICLES NEW VEHICLES
 	///////////////////////////////////
 	
-	/*******************************************
-	 * 
-	 * @throws SimulationException
-	 * @throws VehicleException
-	 * @author Steven
-	 *******************************************/
-	@Test(expected = VehicleException.class)
-	public void tryProcessNewVehicles() throws SimulationException, VehicleException {
-			
-	}
 	
-	/*******************************************
-	 * Test fails if no suitable spaces available when operation commences. 
-	 * @throws SimulationException
-	 * @throws VehicleException
-	 * 
-	 * @author Steven
-	 *******************************************/
-	@Test(expected = SimulationException.class)
-	public void tryProcessNewVehiclesNoSpace() throws SimulationException, VehicleException {
-		fail(); //if the carpark is full people go to the queus, if the queues are full 
-				//they are turned away.. what is this test?
-	}
+//	/*******************************************
+//	 * 
+//	 * @throws SimulationException
+//	 * @throws VehicleException
+//	 * @author Steven
+//	 *******************************************/
+//	@Test
+//	public void tryProcessNewVehicles() throws SimulationException, VehicleException {
+//		testCarPark.tryProcessNewVehicles(arrivalTime, sim);
+//		fail(); //i dont know if it is possible to test this class because of RNG.
+//				//could test that a vehicle is created.. but then i cant be sure..
+//	}
+//	
+//	/*******************************************
+//	 * Test fails if no suitable spaces available when operation commences. 
+//	 * @throws SimulationException
+//	 * @throws VehicleException
+//	 * 
+//	 * @author Steven
+//	 *******************************************/
+//	@Test(expected = SimulationException.class)
+//	public void tryProcessNewVehiclesNoSpace() throws SimulationException, VehicleException {
+//		fail(); //if the carpark is full people go to the queus, if the queues are full 
+//				//they are turned away.. what is this test?
+//	}
 	
 	/*******************************************
 	 * Test fails when vehicle creation violates constraints
@@ -217,6 +222,72 @@ public class CarParkTests {
 	public void exitQueueTimeConstraintsViolated() throws SimulationException, VehicleException {
 		fillQueue();
 		testCarPark.exitQueue(testCar, Constants.CLOSING_TIME +1); 
+	}
+	
+	////////////////////////////////
+	// ENTER QUEUE
+	///////////////////////////////
+	
+	/*************************************
+	 * Testing that when a vehicle exits the que, the queue size is diminished by one.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 *************************************/
+	@Test
+	public void enterQueueSetState() throws SimulationException, VehicleException {
+		//correctly set to Qued state
+		testCarPark.enterQueue(testCar);
+		assertTrue("The vehicle should be set to Queued", testCar.isQueued());
+	}
+	
+	/*************************************
+	 * Testing that when a vehicle exits the que, the queue size is incremented by one.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Steven
+	 *************************************/
+	@Test
+	public void enterQueueIncrememntQueue() throws SimulationException, VehicleException {
+		//correctly set to Qued state.
+		testCarPark.enterQueue(testCar);
+		assertEquals(1, testCarPark.numVehiclesInQueue());
+	}
+	
+	/*************************************
+	 * Testing that when a vehicle is added to the que, it can be correctly identified by vehID.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Steven
+	 *************************************/
+	@Test
+	public void enterQueueCheckID() throws SimulationException, VehicleException {
+		//correctly set to Qued state.
+		testCar = new Car("C69", intendedDuration, isSmall);
+		testCarPark.enterQueue(testCar);
+		testCarPark.exitQueue(testCar, exitTime);
+	}
+	
+	/******************************************************
+	 * throws a simulation exception when queue is full
+	 * constraints are violated
+	 * @author Steven
+	 *************************************************/
+	@Test(expected = SimulationException.class)
+	public void enterQueueFull() throws SimulationException, VehicleException {
+		fillQueue();
+		testCarPark.enterQueue(testCar);
+	}
+	
+	/******************************************************
+	 * throws a simulation exception when vehicle is not queued
+	 * constraints are violated
+	 * @author Steven
+	 *************************************************/
+	@Test(expected = VehicleException.class)
+	public void enterQueueNotInQueue() throws SimulationException, VehicleException {
+		testCar.enterQueuedState();
+		testCar.enterQueuedState();
 	}
 	
 	///////////////////////////////
