@@ -10,6 +10,7 @@
  */
 package asgn2Tests;
 import asgn2Exceptions.*;
+import asgn2Simulators.Constants;
 import asgn2Vehicles.*;
 import static org.junit.Assert.*;
 
@@ -216,7 +217,27 @@ public class CarTests {
 	
 	
 	//test departure time
-	//test isSatisfied
 	
-
+	/**
+	 * Boolean status indicating whether customer is satisfied or not
+	 * Satisfied if they park; dissatisfied if turned away, or queuing for too long 
+     * Vehicles begin in a satisfied state, but this may change over time
+	 * Note that calls to this method may not reflect final status 
+	 * @return true if satisfied, false if never in parked state or if queuing time exceeds max allowable 
+	 */
+	@Test
+	//vehicle turned away, driver is dissatisfied
+	public void testIsSatisfiedTurnedAway() throws VehicleException {
+		TestCar.enterQueuedState();
+		TestCar.exitQueuedState(arrivalTime);
+		assertEquals(TestCar.isSatisfied(), false);	
+	}
+	
+	@Test
+	//Queueing too long
+	public void testIsSatisfiedQueueTooLong() throws VehicleException {
+		TestCar.enterQueuedState();
+		TestCar.exitQueuedState(Constants.MAXIMUM_QUEUE_TIME + 1);
+		assertEquals(TestCar.isSatisfied(), false);	
+	}
 }
