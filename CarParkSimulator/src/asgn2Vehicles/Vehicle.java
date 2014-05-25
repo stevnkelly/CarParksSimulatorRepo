@@ -50,6 +50,8 @@ public abstract class Vehicle {
 	private int DepartureTime;
 	private int IntendedDuration;
 	private char State;
+	private boolean WasParked;
+	private boolean WasQueued;
 	
 	/**
 	 * Vehicle Constructor 
@@ -64,6 +66,7 @@ public abstract class Vehicle {
 		}
 		VehicleID = vehID;
 		ArrivalTime = arrivalTime;
+		State = 'N'; //new car is in a neutral state.
 	}
 
 	/**
@@ -90,6 +93,7 @@ public abstract class Vehicle {
 		}
 		
 		State = 'P';
+		WasParked = true;
 		ParkingTime = parkingTime;
 		IntendedDuration = intendedDuration;
 	}
@@ -100,6 +104,11 @@ public abstract class Vehicle {
 	 * @throws VehicleException if the vehicle is already in a queued or parked state
 	 */
 	public void enterQueuedState() throws VehicleException {
+		if (State != 'N') {
+			throw new VehicleException("Already queued or parked.");
+		}
+		State = 'Q';
+		WasQueued = true;
 	}
 	
 	/**
@@ -109,6 +118,11 @@ public abstract class Vehicle {
 	 * 		  state or if the revised departureTime < parkingTime
 	 */
 	public void exitParkedState(int departureTime) throws VehicleException {
+		if (State != 'P') {
+			throw new VehicleException("Vehicle is not in a parked state.");
+		}		
+		State = 'A'; //enters archive state.
+		DepartureTime = departureTime;
 	}
 
 	/**
@@ -137,6 +151,7 @@ public abstract class Vehicle {
 	 * @return the departureTime
 	 */
 	public int getDepartureTime() {
+		DepartureTime = ArrivalTime + IntendedDuration;
 		return DepartureTime;
 	}
 	
@@ -175,7 +190,11 @@ public abstract class Vehicle {
 	 * @return true if vehicle is in a queued state, false otherwise 
 	 */
 	public boolean isQueued() {
-		return true;
+		if (State == 'Q') {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	/**
@@ -186,7 +205,26 @@ public abstract class Vehicle {
 	 * @return true if satisfied, false if never in parked state or if queuing time exceeds max allowable 
 	 */
 	public boolean isSatisfied() {
-		return true;
+		if (wasParked() == true) {
+			return true;
+		} else if (longQueueTime() ) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	/**
+	 * Boolean helper method to determine if a customer has been waiting too long in the queue
+	 * @return true if the customer has been queued for too long.
+	 * @author Steven
+	 */
+	public boolean longQueueTime() {
+		if (State == 'Q') {
+			if (getArrivalTime() >= maxQueueTime) {
+				//TODO
+			}
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -194,7 +232,8 @@ public abstract class Vehicle {
 	 */
 	@Override
 	public String toString() {
-		//what?
+		//what do they want us to do?
+		//TODO
 	}
 	
 
@@ -204,7 +243,7 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a parked state, false otherwise 
 	 */
 	public boolean wasParked() {
-		return true;
+		return WasParked;
 	}
 
 	/**
@@ -212,6 +251,6 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a queued state, false otherwise 
 	 */
 	public boolean wasQueued() {
-		return true;
+		return WasQueued;
 	}
 }

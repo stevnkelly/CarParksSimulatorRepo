@@ -75,6 +75,8 @@ public class CarTests {
 	 * @author Steven
 	 ********************/	
 	
+	//testing git bash
+	
 	@Test //is parked
 	public void testEnterParkedState() throws Exception {
 		TestCar.enterParkedState(parkingTime,  intendedDuration);
