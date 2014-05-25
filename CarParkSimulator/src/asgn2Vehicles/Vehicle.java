@@ -52,6 +52,7 @@ public abstract class Vehicle {
 	private char State;
 	private boolean WasParked;
 	private boolean WasQueued;
+	private boolean isSatisfied = false;
 	
 	/**
 	 * Vehicle Constructor 
@@ -79,23 +80,25 @@ public abstract class Vehicle {
 	 *         or if intendedDuration is less than the minimum prescribed in asgnSimulators.Constants
 	 */
 	public void enterParkedState(int parkingTime, int intendedDuration) throws VehicleException {
+		//handling negative and zero args.
 		if (parkingTime <= 0) {
 			throw new VehicleException("Parking time must be greater than zero.");
-		} else if (State == 'P') {
-			throw new VehicleException("Vehicle is already parked.");
-		} else if (State == 'Q') {
-			throw new VehicleException("Vehicle is already Queued.");
-		} else if (intendedDuration < Constants.MINIMUM_STAY) {
-			throw new VehicleException("Intended duration is less than minimum.");
-		} else if (parkingTime <= 0) {
-			throw new VehicleException("parking time must be greater than 0");
 		} else if (intendedDuration <= 0) {
 			throw new VehicleException("intendedDuration must be greater than 0");
+		//if the vehicle is already parked.
+		} else if (State == 'P') {
+			throw new VehicleException("Vehicle is already parked.");
+		//if the vehicle is already QUEUED
+		//} else if (State == 'Q') {
+		//	throw new VehicleException("Vehicle is already Queued.");
+		//} else if (intendedDuration < Constants.MINIMUM_STAY) {
+		//	throw new VehicleException("Intended duration is less than minimum.");
 		} else {		
 			State = 'P';
 			WasParked = true;
 			ParkingTime = parkingTime;
 			IntendedDuration = intendedDuration;
+			isSatisfied = true;
 		}
 	}
 	
@@ -110,6 +113,7 @@ public abstract class Vehicle {
 		}
 		State = 'Q';
 		WasQueued = true;
+		isSatisfied = true;
 	}
 	
 	/**
@@ -145,6 +149,11 @@ public abstract class Vehicle {
 		} else {
 			State = 'A'; //enters archive state.
 			DepartureTime = exitTime;
+			if (exitTime >= Constants.MAXIMUM_QUEUE_TIME) {
+				isSatisfied = false;
+			} else if (exitTime == ArrivalTime) {
+				isSatisfied = false;
+			}
 		}
 	}
 	
@@ -163,7 +172,6 @@ public abstract class Vehicle {
 	 * @return the departureTime
 	 */
 	public int getDepartureTime() {
-		DepartureTime = ArrivalTime + IntendedDuration;
 		return DepartureTime;
 	}
 	
@@ -217,50 +225,9 @@ public abstract class Vehicle {
 	 * @return true if satisfied, false if never in parked state or if queuing time exceeds max allowable 
 	 */
 	public boolean isSatisfied() {
-		if (wasParked() == true) {
-			return true;
-		} else if (longQueueTime() ) {
-			return false;
-		} else if (turnedAway()) {
-			return false;
-		} else {
-			return true;
-		}
+		return isSatisfied;
 	}
-	
-	/**
-	 * Boolean helper method to determine if a customer has been waiting too long in the queue
-	 * @return true if the customer has been queued for too long.
-	 * @author Steven
-	 */
-	private boolean longQueueTime() {
-		int arrival = this.getArrivalTime();
-		int depart = this.getDepartureTime();
-		int max = Constants.MAXIMUM_QUEUE_TIME;
-		
-		if (depart - arrival > max) {
-			return false;
-		} else {
-			return true;
-		}
-		
-	}
-	
-	/**
-	 * Boolean helper method to determine if a customer has been turned away.
-	 * @return true if the customer has been queued for too long.
-	 * @author Steven
-	 */
-	private boolean turnedAway() {
-		int arrival = this.getArrivalTime();
-		int depart = this.getDepartureTime();
-		
-		if (depart == arrival) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -278,11 +245,7 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a parked state, false otherwise 
 	 */
 	public boolean wasParked() {
-		if (WasParked) {
-			return true;
-		} else {
-			return false;
-		}
+		return WasParked;
 	}
 
 	/**
@@ -290,10 +253,6 @@ public abstract class Vehicle {
 	 * @return true if vehicle was or is in a queued state, false otherwise 
 	 */
 	public boolean wasQueued() {
-		if (WasQueued) {
-			return true;
-		} else {
-			return false;
-		}
+		return WasQueued;
 	}
 }

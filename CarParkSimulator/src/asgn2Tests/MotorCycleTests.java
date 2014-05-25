@@ -273,6 +273,7 @@ public class MotorCycleTests {
 	@Test //test departure time
 	public void testDepartureTime() {
 		int departure = arrivalTime + intendedDuration;
+		//TestBike.
 		assertEquals(TestBike.getDepartureTime(), departure);
 	}
 	
