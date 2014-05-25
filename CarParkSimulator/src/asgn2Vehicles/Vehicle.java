@@ -149,11 +149,14 @@ public abstract class Vehicle {
 		} else {
 			State = 'A'; //enters archive state.
 			DepartureTime = exitTime;
+			/*
 			if (exitTime >= Constants.MAXIMUM_QUEUE_TIME) {
 				isSatisfied = false;
 			} else if (exitTime == ArrivalTime) {
 				isSatisfied = false;
-			}
+			} else {
+				isSatisfied = true;
+			}*/
 		}
 	}
 	

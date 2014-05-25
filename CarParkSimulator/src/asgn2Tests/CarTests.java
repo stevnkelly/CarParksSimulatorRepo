@@ -98,6 +98,7 @@ public class CarTests {
 	
 	@Test //exit parking
 	public void testExitParking() throws Exception {
+		TestCar.enterParkedState(parkingTime, intendedDuration);
 		TestCar.exitParkedState(departureTime);
 		assertEquals(TestCar.isParked(), false);
 	}
@@ -208,6 +209,7 @@ public class CarTests {
 	
 	@Test //exit queue
 	public void testExitQueue() throws Exception {
+		TestCar.enterQueuedState();
 		TestCar.exitQueuedState(departureTime);
 		assertEquals(TestCar.isQueued(), false);
 	}
