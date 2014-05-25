@@ -63,6 +63,7 @@ public class MotorCycleTests {
 		assertEquals(TestBike.getArrivalTime(), arrivalTime);
 	}
 	
+	
 	@Test //get vehicle ID
 	public void testGetVehID() {
 		assertEquals(TestBike.getVehID(), vehID);
