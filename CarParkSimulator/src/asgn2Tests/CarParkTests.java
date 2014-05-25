@@ -42,9 +42,9 @@ public class CarParkTests {
 	
 	private int arrivalTime = 1;
 	private int exitTime = 1;
-	private String carVehID = "C11";
-	private String smallCarVehID = "S22";
-	private String bikeVehID = "M33";
+	private String carVehID = "C0";
+	private String smallCarVehID = "S0";
+	private String bikeVehID = "M0";
 	private Boolean isSmall = true;
 	private Boolean isLarge = false;
 	private int time = 60;
@@ -90,38 +90,137 @@ public class CarParkTests {
 	/////////////////////
 	// PARK VEHICLES
 	/////////////////////
-	 // @throws SimulationException if no suitable spaces are available for parking 
-	 // @throws VehicleException if vehicle not in the correct state or timing constraints are violated
+
 	
-	/**
+	/*********************************************
 	 * Test exception handling if no spaces are available.
 	 * @throws SimulationException
 	 * @throws VehicleException
 	 * @author Izaac
-	 */
+	 ********************************************/
 	@Test(expected = SimulationException.class)
 	public void parkVehiclesExceptionNoSpaces() throws SimulationException, VehicleException {
 		fillCarPark();
 		testCarPark.parkVehicle(testCar, time, intendedDuration);
 	}
 	
-	/**
-	 * Test exception handling if no spaces are available.
+	/*********************************************
+	 * Park vehicle exception handling if already parked.
 	 * @throws SimulationException
 	 * @throws VehicleException
 	 * @author Izaac
-	 */
+	 ********************************************/
 	@Test(expected = VehicleException.class)
 	public void parkVehiclesExceptionAlreadyParked() throws SimulationException, VehicleException {
 		testCarPark.parkVehicle(testCar, time, intendedDuration);
 		testCarPark.parkVehicle(testCar, time, intendedDuration);
 	}
 	
- 
+	/*******************************************
+	 * Park vehicle exception handling if time constraints are violated.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 *******************************************/
+	@Test(expected = VehicleException.class)
+	public void parkVehicleExceptionTimingConstraints() throws SimulationException, VehicleException {
+		testCarPark.parkVehicle(testCar, Constants.CLOSING_TIME +1, intendedDuration);
+	}
 	
-	///////////////////////////
+	///////////////////////////////////
+	// TRY PROCESS VEHICLES NEW VEHICLES
+	///////////////////////////////////
+	
+	/*******************************************
+	 * 
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Steven
+	 *******************************************/
+	@Test(expected = VehicleException.class)
+	public void tryProcessNewVehicles() throws SimulationException, VehicleException {
+			
+	}
+	
+	/*******************************************
+	 * Test fails if no suitable spaces available when operation commences. 
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Steven
+	 *******************************************/
+	@Test(expected = SimulationException.class)
+	public void tryProcessNewVehiclesNoSpace() throws SimulationException, VehicleException {
+		fail(); //if the carpark is full people go to the queus, if the queues are full 
+				//they are turned away.. what is this test?
+	}
+	
+	/*******************************************
+	 * Test fails when vehicle creation violates constraints
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Steven
+	 *******************************************/
+	@Test(expected = VehicleException.class)
+	public void tryProcessNewVehiclesViolatesConstraints() throws SimulationException, VehicleException {
+		testCarPark.tryProcessNewVehicles(Constants.CLOSING_TIME +1, testSimulator);
+	}
+	
+	////////////////////////////////////
+	// EXIT QUEUE
+	///////////////////////////////////
+	
+	/*************************************
+	 * Testing that when a vehicle exits the que, the queue size is diminished by one.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 *************************************/
+	@Test
+	public void exitQueue() throws SimulationException, VehicleException {
+		fillQueue();
+		testCarPark.exitQueue(testCar, exitTime);
+		assertEquals(maxQueueSize -1, testCarPark.numVehiclesInQueue());
+	}
+	
+	/******************************************************
+	 * throws a simulation exception when exiting a queue but not in the queue
+	 * constraints are violated
+	 * @author Steven
+	 *************************************************/
+	@Test(expected = SimulationException.class)
+	public void exitQueueNotInQueue() throws SimulationException, VehicleException {
+		fillQueue();
+		testCar = new Car("C00", intendedDuration, isSmall);
+		testCarPark.exitQueue(testCar, exitTime);
+	}
+	
+	/*********************************************
+	 * throws a simulation exception when exiting a que but already parked
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Steven
+	 ********************************************/
+	@Test(expected = VehicleException.class)
+	public void exitQueueExceptionAlreadyParked() throws SimulationException, VehicleException {
+		testCarPark.parkVehicle(testCar, time, intendedDuration);
+		testCarPark.parkVehicle(testCar, time, intendedDuration);
+	}
+	
+	/*********************************************
+	 * throws a simulation exception when time constraints are violated
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Steven
+	 ********************************************/
+	@Test(expected = VehicleException.class)
+	public void exitQueueTimeConstraintsViolated() throws SimulationException, VehicleException {
+		fillQueue();
+		testCarPark.exitQueue(testCar, Constants.CLOSING_TIME +1); 
+	}
+	
+	///////////////////////////////
 	// ARCHIVE DEPARTING VEHICLE
-	///////////////////////////
+	///////////////////////////////
 	
 	/**
 	 * Expects an exception when archiving a vehicle in the incorrect state.
@@ -143,10 +242,91 @@ public class CarParkTests {
 		
 	}
 	
-	//////////////////////////
-	// SIMPLE GETTERS
-	///////////////////////
+	////////////////////////////////
+	// SIMPLE GETTERS - CARPARK FULL
+	/////////////////////////////////
 	
+	/**
+	 * Calling this method on a full Carpark should return true.
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 * @author Steven
+	 */
+	@Test
+	public void carParkFullTrue() throws VehicleException, SimulationException {
+		fillCarPark();
+		assertTrue("Calling this method on a full Carpark should return true.", testCarPark.carParkFull());
+	}
+	
+	/**
+	 * Calling this method on an empty Carpark should return False.
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 * @author Steven
+	 */
+	@Test
+	public void carParkFullFalse() throws VehicleException, SimulationException {
+		assertTrue("Calling this method on a full Carpark should return true.", !testCarPark.carParkFull());
+	}
+	
+	///////////////////////////////////
+	// SIMPLE GETTERS - CAR PARK EMPTY
+	//////////////////////////////////
+	
+	/**
+	 * Calling this method on a full Carpark should return false.
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 * @author Steven
+	 */
+	@Test
+	public void carParkEmptyFalse() throws VehicleException, SimulationException {
+		fillCarPark();
+		Boolean carParkEmpty = testCarPark.carParkEmpty();
+		assertTrue("Calling this method on a full Carpark should return false.", !carParkEmpty);
+	}
+	
+	/**
+	 * Calling this method on an empty Carpark should return true.
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 * @author Steven
+	 */
+	@Test
+	public void carParkEmptyTrue() throws VehicleException, SimulationException {
+		Boolean carParkEmpty = testCarPark.carParkEmpty();
+		assertTrue("Calling this method on an empty Carpark should return true.", carParkEmpty);
+	}
+
+	/////////////////////////////////////////
+	// SIMPLE GETTERS - NUM VEHICLES IN QUE
+	////////////////////////////////////////
+	
+	//numVehiclesInQueue
+	/**
+	 * Calling this method on a full list should be equal to the maxQueueSize.
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 * @author Steven
+	 */
+	@Test
+	public void numVehiclesInQueueFilled() throws VehicleException, SimulationException {
+		fillQueue();
+		assertEquals(testCarPark.numVehiclesInQueue(), maxQueueSize);
+	}
+	
+	/**
+	 * Calling this method on an empty Queue should return zero.
+	 * @throws VehicleException
+	 * @throws SimulationException
+	 * @author Steven
+	 */
+	@Test
+	public void numVehiclesInQueueZero() throws VehicleException, SimulationException {
+		assertEquals(testCarPark.numVehiclesInQueue(), 0);
+	}
+	
+	//getNumCars() Boundary cases
 	/**
 	 * checks to see that getNumCars correctly performs addition of normal, small, and bikes.
 	 * @author Steven
@@ -185,6 +365,12 @@ public class CarParkTests {
 	///////////////////////
 	// HELPER METHODS
 	///////////////////////
+	private void fillQueue() throws SimulationException, VehicleException {
+		for (int i=0; i < maxQueueSize; i++) {
+			testCar = new Car("C" + i, intendedDuration, isLarge);
+			testCarPark.enterQueue(testCar);
+		}
+	}
 	
 	private void fillCarPark() throws SimulationException, VehicleException {
 		fillNormalSpaces();
