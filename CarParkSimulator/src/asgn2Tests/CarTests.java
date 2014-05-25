@@ -9,8 +9,8 @@
  * 
  */
 package asgn2Tests;
+import asgn2Exceptions.*;
 import asgn2Vehicles.*;
-
 import static org.junit.Assert.*;
 
 import org.junit.After;
@@ -33,6 +33,7 @@ public class CarTests {
 	int intendedDuration = 1;
 	int departureTime = 1;
 	int arrivalTime = 1;
+	int exitTime = 1;
 	String vehID = "abc";
 	boolean isSmall = true;
 	
@@ -75,7 +76,6 @@ public class CarTests {
 	 * @author Steven
 	 ********************/	
 	
-	//testing git bash
 	
 	@Test //is parked
 	public void testEnterParkedState() throws Exception {
@@ -99,6 +99,37 @@ public class CarTests {
 	public void testExitParking() throws Exception {
 		TestCar.exitParkedState(departureTime);
 		assertEquals(TestCar.isParked(), false);
+	}
+	
+	/****************************
+	 * TEST PARKING EXCEPTIONS
+	 * @author Steven
+	 *****************************/
+	
+	@Test(expected = VehicleException.class)
+	//enter parked state duration <= 0
+	public void testEnterParkedExceptionDurationZero() throws VehicleException {
+		TestCar.enterParkedState(0, intendedDuration);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//vehicle already parked
+	public void testEnterParkedExceptionAlreadyParked() throws VehicleException {
+		TestCar.enterParkedState(parkingTime, intendedDuration);
+		TestCar.enterParkedState(parkingTime, intendedDuration);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//vehicle already queued.
+	public void testEnterParkedExceptionAlreadyQueued() throws VehicleException {
+		TestCar.enterQueuedState();
+		TestCar.enterParkedState(parkingTime, intendedDuration);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//intended duration < minimum
+	public void testEnterParkedExceptionDurationMin() throws VehicleException {
+		
 	}
 
 	/*********************
@@ -124,6 +155,56 @@ public class CarTests {
 		assertEquals(TestCar.isQueued(), false);
 	}
 	
+	/*********************
+	 * TESTING QUEING EXCEPTIONS
+	 * @author Steven
+	 ********************/
+	
+	@Test(expected = VehicleException.class)
+	//vehicle already qued
+	public void testEnterQueuedExceptionAlreadyQueued() throws VehicleException {
+		TestCar.enterQueuedState();
+		TestCar.enterQueuedState();
+	}
+	
+	@Test(expected = VehicleException.class)
+	//vehicle already parked
+	public void testEnterQueuedExceptionAlreadyParked() throws VehicleException {
+		TestCar.enterParkedState(parkingTime, intendedDuration);
+		TestCar.enterQueuedState();
+	}
+	
+	@Test(expected = VehicleException.class)
+	//exit queued when parked
+	public void testExitQueuedAlreadyParked() throws VehicleException {
+		TestCar.enterParkedState(parkingTime, intendedDuration);
+		TestCar.exitQueuedState(exitTime);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//exit que when not queued
+	public void testExitQueuedAlreadyQueued() throws VehicleException {
+		TestCar.exitQueuedState(exitTime);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//departing before arrival
+	public void testExitQueuedExitBeforeArrive() throws VehicleException {
+		int arrival = 300;
+		int exit = 299;
+		TestCar = new Car(vehID, arrival, isSmall);
+		TestCar.exitQueuedState(exit);
+	}
+	
+	@Test(expected = VehicleException.class)
+	//departing before arrival
+	public void testExitQueuedNegativeDeparture() throws VehicleException {
+		int arrival = 300;
+		int exit = -1;
+		TestCar = new Car(vehID, arrival, isSmall);
+		TestCar.exitQueuedState(exit);
+	}
+	
 	/*******************
 	 * OTHER TESTS
 	 ******************/
@@ -132,6 +213,7 @@ public class CarTests {
 	public void testToString() {
 		fail("Not yet implemented"); // TODO
 	}
+	
 	
 	//test departure time
 	//test isSatisfied
