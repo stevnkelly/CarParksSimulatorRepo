@@ -146,6 +146,7 @@ public class CarParkTests {
 	 * Test fails if no suitable spaces available when operation commences. 
 	 * @throws SimulationException
 	 * @throws VehicleException
+	 * 
 	 * @author Steven
 	 *******************************************/
 	@Test(expected = SimulationException.class)
