@@ -200,6 +200,7 @@ public class CarParkTests {
 	 */
 	private void fillNormalSpaces() throws SimulationException, VehicleException {
 		for (int i=0; i < maxSpaces; i++) {
+			testCar = new Car("C" + i, intendedDuration, isLarge);
 			testCarPark.parkVehicle(testCar, time, intendedDuration);
 		}
 	}
@@ -212,6 +213,7 @@ public class CarParkTests {
 	 */
 	private void fillSmallSpaces() throws SimulationException, VehicleException {
 		for (int i=0; i < maxSmallCarSpaces; i++) {
+			testSmallCar = new Car("S" + i, intendedDuration, isSmall);
 			testCarPark.parkVehicle(testSmallCar, time, intendedDuration);
 		}
 	}
@@ -224,6 +226,7 @@ public class CarParkTests {
 	 */
 	private void fillBikeSpaces() throws SimulationException, VehicleException {
 		for (int i=0; i < maxMotorCycleSpaces; i++) {
+			testBike = new MotorCycle("M" + i, intendedDuration);
 			testCarPark.parkVehicle(testBike, time, intendedDuration);
 		}
 	}
