@@ -41,19 +41,22 @@ public class CarParkTests {
 	private Simulator testSimulator;
 	
 	private int arrivalTime = 1;
-	private int exitTime = 1;
+	private int exitTime = 300;
 	private String carVehID = "C0";
 	private String smallCarVehID = "S0";
 	private String bikeVehID = "M0";
 	private Boolean isSmall = true;
 	private Boolean isLarge = false;
-	private int time = 60;
-	private int intendedDuration = 1;
+	private int time = 150;
+	private int intendedDuration = Constants.MINIMUM_STAY + 1;
 	
+	private int minStay = Constants.MINIMUM_STAY;
 	private int maxSpaces = Constants.DEFAULT_MAX_CAR_SPACES; //100
 	private int maxSmallCarSpaces = Constants.DEFAULT_MAX_SMALL_CAR_SPACES; // = 20;
 	private int maxMotorCycleSpaces = Constants.DEFAULT_MAX_MOTORCYCLE_SPACES;// = 20;
 	private int maxQueueSize = Constants.DEFAULT_MAX_QUEUE_SIZE; // = 10;
+	private int lastEntry = Constants.CLOSING_TIME-60;
+	private int closingTime = Constants.CLOSING_TIME;
 	
 	
 	@Before
@@ -68,29 +71,63 @@ public class CarParkTests {
 	@After
 	public void tearDown() throws Exception {
 	}
-
-	///////////////////////
-	// CONSTRUCTOR TESTS
-	///////////////////////
 	
-	/**
-	 * test that a CarPark is correctly constructed with default values;
+	
+	
+	///////////////////////////////////////
+	// UNPARK VEHICLES - EXCEPTIONS
+	//////////////////////////////////////
+	
+	/*********************************************
+	 * Throw an exception when attempting to unpark a car that is unparked.
 	 * @throws SimulationException
 	 * @throws VehicleException
-	 * @author Steven
-	 */
-	@Test 
-	public void carParkConstructed() throws SimulationException, VehicleException {
-		fillCarPark();
-		//assertTrue("This test fills the carpark to capacity, carParkFull should return"
-		//		+ "true", testCarPark.carParkFull());
-		System.out.println("Car park is full =" + testCarPark.carParkFull());
-		assertEquals(testCarPark.carParkFull(), true);
+	 * @author Izaac
+	 ********************************************/
+	@Test(expected = SimulationException.class)
+	public void unParkVehiclesExceptionNotParked() throws SimulationException, VehicleException {
+		testCarPark.unparkVehicle(testCar, time);
+	}
+	
+	/*********************************************
+	 * Throw an exception when attempting to unpark a car that is queued.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 ********************************************/
+	@Test(expected = SimulationException.class)
+	public void unParkVehiclesExceptionAlreadyQueued() throws SimulationException, VehicleException {
+		testCar.enterQueuedState();
+		testCarPark.unparkVehicle(testCar, time);
+	}
+	
+	/*********************************************
+	 * Throw an exception if unparking vehicle does not exist in the park.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 ********************************************/
+	@Test(expected = SimulationException.class)
+	public void unparkVehiclesExceptionNotInPark() throws SimulationException, VehicleException {
+		testCarPark.unparkVehicle(testCar, time);
+	}
+	
+	/*********************************************
+	 * Throw an exception if unparking before min stay.
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 * @author Izaac
+	 ********************************************/
+	@Test(expected = VehicleException.class)
+	public void unparkVehicleException() throws SimulationException, VehicleException {
+		testCarPark.parkVehicle(testCar, 2, intendedDuration);
+		testCarPark.unparkVehicle(testCar, 1);
 	}
 	
 	/////////////////////////////////////////
 	// PARK VEHICLES - INCREMENT COUNTERS
 	/////////////////////////////////////////
+	
 	
 	/*********************************************
 	 * Test that park vehicle increments the numCars vehicle counter
@@ -171,7 +208,8 @@ public class CarParkTests {
 	public void parkVehicleBikeSpaces() throws SimulationException, VehicleException {
 		testCarPark.parkVehicle(testBike, time, intendedDuration);
 		Boolean isEmpty = testCarPark.carParkEmpty();
-		assertTrue("IsEmpty should be false if a car was added", !isEmpty);
+		assertTrue("Attempted to park a bike in empty car park, but test found that the"
+				+ "car park was empty", !isEmpty);
 	}
 	
 	/////////////////////////////////////////
@@ -291,7 +329,7 @@ public class CarParkTests {
 		assertTrue("The Process Queue has an empty queue, it should not be parking cars.",
 				(queueIsEmpty && numCarsUnchanged));
 	} 
-	
+		
 	/*******************************************
 	 * Process Queue exception handling if time constraints are violated.
 	 * @throws SimulationException
@@ -491,6 +529,15 @@ public class CarParkTests {
 		
 	}
 	
+	@Test
+	public void testing() throws SimulationException, VehicleException {
+		fillCarPark();
+		testCarPark.archiveDepartingVehicles(300, true);
+		assertEquals(1,1);
+		
+		
+	} 
+	
 	/**
 	 * Expects an exception when archiving a vehicle in the incorrect state.
 	 * @throws SimulationException if one or more departing vehicles are not in the car park when operation applied.
@@ -658,6 +705,7 @@ public class CarParkTests {
 	 * @author Steven
 	 */
 	private void fillNormalSpaces() throws SimulationException, VehicleException {
+		
 		for (int i=0; i < maxSpaces; i++) {
 			testCar = new Car("C" + i, intendedDuration, isLarge);
 			testCarPark.parkVehicle(testCar, time, intendedDuration);
@@ -672,6 +720,7 @@ public class CarParkTests {
 	 * @author Steven
 	 ***********************************************/
 	private void fillSmallSpaces() throws SimulationException, VehicleException {
+		
 		for (int i=0; i < maxSmallCarSpaces; i++) {
 			testSmallCar = new Car("S" + i, intendedDuration, isSmall);
 			testCarPark.parkVehicle(testSmallCar, time, intendedDuration);
@@ -685,6 +734,7 @@ public class CarParkTests {
 	 * @author Steven
 	 ***********************************************/
 	private void fillBikeSpaces() throws SimulationException, VehicleException {
+
 		for (int i=0; i < maxMotorCycleSpaces; i++) {
 			testBike = new MotorCycle("M" + i, intendedDuration);
 			testCarPark.parkVehicle(testBike, time, intendedDuration);

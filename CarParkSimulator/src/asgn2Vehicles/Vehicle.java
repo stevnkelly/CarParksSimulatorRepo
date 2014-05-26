@@ -103,7 +103,7 @@ public abstract class Vehicle {
 			state = 'P';
 			wasParked = true;
 			this.parkingTime = parkingTime;
-			intendedDuration = intendedDuration;
+			this.intendedDuration = intendedDuration;
 			isSatisfied = true;
 		}
 	}
