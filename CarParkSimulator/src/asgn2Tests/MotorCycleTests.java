@@ -9,7 +9,6 @@
  * 
  */
 package asgn2Tests;
-
 import asgn2Exceptions.*;
 import asgn2Simulators.Constants;
 import asgn2Vehicles.*;
@@ -24,79 +23,124 @@ import org.junit.Test;
  *
  */
 public class MotorCycleTests {
-
+	
 	/************************
 	 * SETTING UP VARIABLES
 	 * @author Steven
 	 ***********************/	
 	
-	Car TestBike;
-	int parkingTime = 1;
-	int intendedDuration = 1;
-	int departureTime = 1;
+	Car testBike;
+	int parkingTime = 111;
+	int intendedDuration = 110;
+	int departureTime = 222;
 	int arrivalTime = 1;
-	int exitTime = 1;
-	String vehID = "abc";
+	int exitTime = 444;
+	String vehID = "C12";
 	boolean isSmall = true;
 	
 	@Before
-	public void setUp() throws Exception {
-		TestBike = new Car(vehID, arrivalTime, isSmall);
+	public void setUp() throws VehicleException {
+		testBike = new Car(vehID, arrivalTime, isSmall);
 	}
 
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() throws VehicleException {
 	}
 
-	/************************
-	 * CONSTRUCTOR TESTS
-	 * @author Steven
-	 ***********************/	
-
-	@Test //constructed
-	public void TestBike() {
-		assertNotNull(TestBike);
+	/////////////////////////////////////
+	// CONSTRUCTOR TESTS
+	/////////////////////////////////	
+	
+	/*********************************************************
+	 * testBike is constructed and not null
+	 **********************************************************/
+	@Test
+	public void testBike() {
+		assertNotNull(testBike);
 	}
 	
-	@Test //arrival time
-	public void testGetArrivalTime() {
-		assertEquals(TestBike.getArrivalTime(), arrivalTime);
+	/********************************************************
+	 * Arrival Time is set and retrieved
+	 * @throws VehicleException
+	 *********************************************************/
+	@Test
+	public void testGetArrivalTime() throws VehicleException {
+		arrivalTime = 1;
+		Vehicle Car = new Car(vehID, arrivalTime, isSmall);
+		assertEquals(testBike.getArrivalTime(), arrivalTime);
 	}
 	
-	
+	/********************************************************
+	 * Arrival Time is set and retrieved
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test //get vehicle ID
-	public void testGetVehID() {
-		assertEquals(TestBike.getVehID(), vehID);
+	public void testGetVehID() throws VehicleException {
+		vehID = "C69";
+		Vehicle testBike = new Car(vehID, arrivalTime, isSmall);
+		assertEquals(testBike.getVehID(), vehID);
+	}
+	
+	/********************************************************
+	 * isSmall returns correct value.
+	 * @throws VehicleException
+	 *********************************************************/
+	@Test
+	public void testIsSmall() {
+		this.isSmall = true;
+		assertEquals(testBike.isSmall(), true);	
 	}
 
-	/*********************
-	 * TESTING PARKING
+	///////////////////////////////////////
+	// TESTING PARKING
+	//////////////////////////////////////	
+	
+	/*********************************************************
+	 * Test that enterParked() mutates the isParked propery of Vehicle.
+	 * isParked returns the value. This tests both methods.
+	 * @throws VehicleException
+	 *********************************************************/
+	@Test 
+	public void testEnterParkedState() throws VehicleException {
+		testBike.enterParkedState(parkingTime, intendedDuration);
+		assertEquals(testBike.isParked(), true);
+	}
+	
+	/******************************************
+	 * Global variable wasParked is set by enterParked state. Can be accessed
+	 * with wasParked().
+	 * @throws VehicleException on enterParkedState when isParked() = true;
 	 * @author Steven
-	 ********************/	
-	
-	
-	@Test //is parked
-	public void testEnterParkedState() throws Exception {
-		TestBike.enterParkedState(parkingTime,  intendedDuration);
-		assertEquals(TestBike.isParked(), true);
+	 *******************************************/
+	@Test
+	public void testWasParked() throws VehicleException {
+		testBike.enterParkedState(parkingTime,  intendedDuration);
+		assertEquals(testBike.wasParked(), true);
 	}
 	
-	@Test //was parked
-	public void testWasParked() throws Exception {
-		TestBike.enterParkedState(parkingTime,  intendedDuration);
-		assertEquals(TestBike.wasParked(), true);
+	/******************************************
+	 * Parking time is set when the vehicle enters into a parking state.
+	 * getParkingTime should return the same time as used in the args
+	 * for enterParkedState.
+	 * @throws VehicleException
+	 * @author Steven
+	 *******************************************/
+	@Test 
+	public void testParkingTime() throws VehicleException {
+		testBike.enterParkedState(this.parkingTime,  intendedDuration);
+		assertEquals(testBike.getParkingTime(), this.parkingTime);
 	}
 	
-	@Test //parking time
-	public void testParkingTime() throws Exception {
-		TestBike.enterParkedState(parkingTime,  intendedDuration);
-		assertEquals(TestBike.getParkingTime(), parkingTime);
-	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test //exit parking
-	public void testExitParking() throws Exception {
-		TestBike.exitParkedState(departureTime);
-		assertEquals(TestBike.isParked(), false);
+	public void testExitParking() throws VehicleException {
+		testBike.enterParkedState(parkingTime, intendedDuration);
+		testBike.exitParkedState(departureTime);
+		assertEquals(testBike.isParked(), false);
 	}
 	
 	/****************************
@@ -104,31 +148,47 @@ public class MotorCycleTests {
 	 * @author Steven
 	 *****************************/
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
-	//enter parked state duration <= 0 throws exception
+	//enter parked state duration <= 0 throws VehicleException
 	public void testEnterParkedExceptionDurationZero() throws VehicleException {
-		TestBike.enterParkedState(0, intendedDuration);
+		testBike.enterParkedState(0, intendedDuration);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
-	//vehicle already parked throws exception
+	//vehicle already parked throws VehicleException
 	public void testEnterParkedExceptionAlreadyParked() throws VehicleException {
-		TestBike.enterParkedState(parkingTime, intendedDuration);
-		TestBike.enterParkedState(parkingTime, intendedDuration);
+		testBike.enterParkedState(parkingTime, intendedDuration);
+		testBike.enterParkedState(parkingTime, intendedDuration);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
-	//vehicle already queued throws exception
+	//vehicle already queued throws VehicleException
 	public void testEnterParkedExceptionAlreadyQueued() throws VehicleException {
-		TestBike.enterQueuedState();
-		TestBike.enterParkedState(parkingTime, intendedDuration);
+		testBike.enterQueuedState();
+		testBike.enterParkedState(parkingTime, intendedDuration);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
-	//intended duration < minimum throws exception
+	//intended duration < minimum throws VehicleException
 	public void testEnterParkedExceptionDurationMin() throws VehicleException {
 		int min = Constants.MINIMUM_STAY;
-		TestBike.enterParkedState(parkingTime, min -1);
+		testBike.enterParkedState(parkingTime, min -1);
 	}
 	
 	/***
@@ -136,26 +196,38 @@ public class MotorCycleTests {
 	 * @author steven
 	 ***/
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
-	//departing before arrival throws exception
+	//departing before arrival throws VehicleException
 	public void testExitParkedExceptionNegativeDeparture() throws VehicleException {
 		int exit = -1;
-		TestBike = new Car(vehID, arrivalTime, isSmall);
-		TestBike.exitQueuedState(exit);
+		testBike = new Car(vehID, arrivalTime, isSmall);
+		testBike.exitQueuedState(exit);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
 	//enter parked state with negative parkingTime
 	public void testEnterParkedExceptionNegativeTime() throws VehicleException {
 		int time = -1;
-		TestBike.enterParkedState(time, intendedDuration);
+		testBike.enterParkedState(time, intendedDuration);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
 	//enter parked state with negative intendedDuration
 	public void testEnterParkedExceptionNegativeDuration() throws VehicleException {
 		int duration = -1;
-		TestBike.enterParkedState(parkingTime, duration);
+		testBike.enterParkedState(parkingTime, duration);
 	}
 	
 	/***
@@ -163,26 +235,38 @@ public class MotorCycleTests {
 	 * @author Steven
 	 ***/
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
-	//departing before arrival throws exception
+	//departing before arrival throws VehicleException
 	public void testExitParkedExceptionZeroDeparture() throws VehicleException {
 		int exit = 0;
-		TestBike = new Car(vehID, arrivalTime, isSmall);
-		TestBike.exitQueuedState(exit);
+		testBike = new Car(vehID, arrivalTime, isSmall);
+		testBike.exitQueuedState(exit);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
 	//enter parked state with negative parkingTime
 	public void testEnterParkedExceptionZeroTime() throws VehicleException {
 		int time = 0;
-		TestBike.enterParkedState(time, intendedDuration);
+		testBike.enterParkedState(time, intendedDuration);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test(expected = VehicleException.class)
 	//enter parked state with negative intendedDuration
 	public void testEnterParkedExceptionZeroDuration() throws VehicleException {
 		int duration = 0;
-		TestBike.enterParkedState(parkingTime, duration);
+		testBike.enterParkedState(parkingTime, duration);
 	}
 	
 
@@ -191,22 +275,35 @@ public class MotorCycleTests {
 	 * @author Steven
 	 ********************/
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test //is queued
-	public void testEnterQueuedState() throws Exception {
-		TestBike.enterQueuedState();
-		assertEquals(TestBike.isQueued(), true);
+	public void testEnterQueuedState() throws VehicleException {
+		testBike.enterQueuedState();
+		assertEquals(testBike.isQueued(), true);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test //was queued
-	public void testWasQueued() throws Exception {
-		TestBike.enterQueuedState();
-		assertEquals(TestBike.wasQueued(), true);
+	public void testWasQueued() throws VehicleException {
+		testBike.enterQueuedState();
+		assertEquals(testBike.wasQueued(), true);
 	}
 	
+	/********************************************************
+	 * 
+	 * @throws VehicleException
+	 *********************************************************/
 	@Test //exit queue
-	public void testExitQueue() throws Exception {
-		TestBike.exitQueuedState(departureTime);
-		assertEquals(TestBike.isQueued(), false);
+	public void testExitQueue() throws VehicleException {
+		testBike.enterQueuedState();
+		testBike.exitQueuedState(departureTime);
+		assertEquals(testBike.isQueued(), false);
 	}
 	
 	/*********************
@@ -217,79 +314,72 @@ public class MotorCycleTests {
 	@Test(expected = VehicleException.class)
 	//vehicle already qued
 	public void testEnterQueuedExceptionAlreadyQueued() throws VehicleException {
-		TestBike.enterQueuedState();
-		TestBike.enterQueuedState();
+		testBike.enterQueuedState();
+		testBike.enterQueuedState();
 	}
 	
 	@Test(expected = VehicleException.class)
 	//vehicle already parked
 	public void testEnterQueuedExceptionAlreadyParked() throws VehicleException {
-		TestBike.enterParkedState(parkingTime, intendedDuration);
-		TestBike.enterQueuedState();
+		testBike.enterParkedState(parkingTime, intendedDuration);
+		testBike.enterQueuedState();
 	}
 	
 	@Test(expected = VehicleException.class)
-	//exit queued when parked throws exception
+	//exit queued when parked throws VehicleException
 	public void testExitQueuedAlreadyParked() throws VehicleException {
-		TestBike.enterParkedState(parkingTime, intendedDuration);
-		TestBike.exitQueuedState(exitTime);
+		testBike.enterParkedState(parkingTime, intendedDuration);
+		testBike.exitQueuedState(exitTime);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//exit que when not queued throws exception
+	//exit que when not queued throws VehicleException
 	public void testExitQueuedAlreadyQueued() throws VehicleException {
-		TestBike.exitQueuedState(exitTime);
+		testBike.exitQueuedState(exitTime);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//departing before arrival throws exception
+	//departing before arrival throws VehicleException
 	public void testExitQueuedExitBeforeArrive() throws VehicleException {
 		int arrival = 300;
 		int exit = 299;
-		TestBike = new Car(vehID, arrival, isSmall);
-		TestBike.exitQueuedState(exit);
+		testBike = new Car(vehID, arrival, isSmall);
+		testBike.exitQueuedState(exit);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//negative exit time throws exception
+	//negative exit time throws VehicleException
 	public void testExitQueuedNegativeDeparture() throws VehicleException {
 		int exit = -1;
-		TestBike = new Car(vehID, arrivalTime, isSmall);
-		TestBike.exitQueuedState(exit);
+		testBike = new Car(vehID, arrivalTime, isSmall);
+		testBike.exitQueuedState(exit);
 	}
 	
 	@Test(expected = VehicleException.class)
-	//zero exit time throws exception
+	//zero exit time throws VehicleException
 	public void testExitQueuedZeroDeparture() throws VehicleException {
 		int exit = 0;
-		TestBike = new Car(vehID, arrivalTime, isSmall);
-		TestBike.exitQueuedState(exit);
+		testBike = new Car(vehID, arrivalTime, isSmall);
+		testBike.exitQueuedState(exit);
 	}
 	
 	/*******************
 	 * OTHER TESTS
 	 ******************/
 	
-	@Test //test departure time
-	public void testDepartureTime() {
-		int departure = arrivalTime + intendedDuration;
-		//TestBike.
-		assertEquals(TestBike.getDepartureTime(), departure);
-	}
-	
 	@Test
 	//vehicle turned away, driver is dissatisfied
 	public void testIsSatisfiedTurnedAway() throws VehicleException {
-		TestBike.enterQueuedState();
-		TestBike.exitQueuedState(arrivalTime);
-		assertEquals(TestBike.isSatisfied(), false);	
+		testBike.enterQueuedState();
+		testBike.exitQueuedState(arrivalTime);
+		assertEquals(testBike.isSatisfied(), false);	
 	}
 	
 	@Test
 	//Queueing too long = dissatisfied
 	public void testIsSatisfiedQueueTooLong() throws VehicleException {
-		TestBike.enterQueuedState();
-		TestBike.exitQueuedState(Constants.MAXIMUM_QUEUE_TIME + 1);
-		assertEquals(TestBike.isSatisfied(), false);	
+		testBike.enterQueuedState();
+		testBike.exitQueuedState(Constants.MAXIMUM_QUEUE_TIME + 1);
+		assertEquals(testBike.isSatisfied(), false);	
 	}
 }
