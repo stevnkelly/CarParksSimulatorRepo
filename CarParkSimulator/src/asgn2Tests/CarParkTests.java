@@ -84,6 +84,7 @@ public class CarParkTests {
 		fillCarPark();
 		//assertTrue("This test fills the carpark to capacity, carParkFull should return"
 		//		+ "true", testCarPark.carParkFull());
+		System.out.println("Car park is full =" + testCarPark.carParkFull());
 		assertEquals(testCarPark.carParkFull(), true);
 	}
 	
@@ -637,6 +638,12 @@ public class CarParkTests {
 		}
 	}
 	
+	/*******************************************
+	 * helper method to fill the car park to capacity
+	 * @throws SimulationException
+	 * @throws VehicleException
+	 ***********************************************/
+	
 	private void fillCarPark() throws SimulationException, VehicleException {
 		fillNormalSpaces();
 		fillSmallSpaces();
@@ -683,6 +690,6 @@ public class CarParkTests {
 			testCarPark.parkVehicle(testBike, time, intendedDuration);
 		}
 	}
-	
+
 	
 }
