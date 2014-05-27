@@ -120,8 +120,8 @@ public class CarParkTests {
 	 ********************************************/
 	@Test(expected = VehicleException.class)
 	public void unparkVehicleException() throws SimulationException, VehicleException {
-		testCarPark.parkVehicle(testCar, 200, intendedDuration);
-		testCarPark.unparkVehicle(testCar, 199);
+		testCarPark.parkVehicle(testCar, minStay, intendedDuration);
+		testCarPark.unparkVehicle(testCar, minStay-1);
 	}
 	
 	/////////////////////////////////////////
@@ -518,35 +518,8 @@ public class CarParkTests {
 	///////////////////////////////
 	// ARCHIVE DEPARTING VEHICLE
 	///////////////////////////////
+
 	
-	/**
-	 * Expects an exception when archiving a vehicle in the incorrect state.
-	 * @throws VehicleException
-	 * @author Steven
-	 */
-	@Test(expected = VehicleException.class)
-	public void archiveDepartingVehiclesIncorrectState() throws VehicleException  {
-		
-	}
-	
-	@Test
-	public void testing() throws SimulationException, VehicleException {
-		fillCarPark();
-		testCarPark.archiveDepartingVehicles(300, true);
-		assertEquals(1,1);
-		
-		
-	} 
-	
-	/**
-	 * Expects an exception when archiving a vehicle in the incorrect state.
-	 * @throws SimulationException if one or more departing vehicles are not in the car park when operation applied.
-	 * @author Steven
-	 */
-	@Test(expected = VehicleException.class)
-	public void archiveDepartingVehiclesNotParked() throws SimulationException  {
-		
-	}
 	
 	////////////////////////////////
 	// SIMPLE GETTERS - CARPARK FULL
@@ -692,9 +665,11 @@ public class CarParkTests {
 	 ***********************************************/
 	
 	private void fillCarPark() throws SimulationException, VehicleException {
-		fillNormalSpaces();
-		fillSmallSpaces();
 		fillBikeSpaces();
+		fillSmallSpaces();
+		fillNormalSpaces();
+		
+		
 	}
 	
 	

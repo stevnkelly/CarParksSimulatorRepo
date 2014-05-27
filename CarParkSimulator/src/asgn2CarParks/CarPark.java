@@ -178,7 +178,7 @@ public class CarPark {
 	 * @return true if car park full, false otherwise
 	 */
 	public boolean carParkFull() {
-		return (numCars + numBikes >= this.maxSpaces);
+		return (spaces.size() >= this.maxSpaces);
 	}
 	
 	/**
@@ -338,10 +338,10 @@ public class CarPark {
 	 */
 	public boolean spacesAvailable(Vehicle v) {
 		Boolean spacesAvailable = false;
-		if (carParkFull() && (v != null) ) {
+		if (carParkFull()) {
 			return false;
-		} else { 
-
+		}
+		if (v != null) {
 			vehicleType = getVehicleType(v); //extract vehicle type from vehicle id
 			switch (vehicleType) { //switch on vehicle type
 	            case "C": //normal car
@@ -371,7 +371,7 @@ public class CarPark {
 		Iterator<Vehicle> spacesIterator = spaces.iterator();
 
 		exceptionIfNotInCarPark(departingVehicle); //tested
-		//exceptionTimeConstraints(departureTime, minStay); //tested
+		exceptionTimeConstraints(departureTime, minStay); //tested
 		exceptionIfQueued(departingVehicle); //tested
 		exceptionIfNotParked(departingVehicle); //tested
 		
