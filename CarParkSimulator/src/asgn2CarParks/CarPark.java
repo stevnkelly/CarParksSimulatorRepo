@@ -39,7 +39,7 @@ import asgn2Vehicles.Vehicle;
  *
  */
 public class CarPark {
-
+	
 	private Queue<Vehicle> queue;
 	private ArrayList<Vehicle> spaces; //simulates the car park storage for all currently parked cars.
 	private ArrayList<Vehicle> alternativeSpaces; //tracks the vehicles currently parking in an alternative park.
@@ -48,13 +48,16 @@ public class CarPark {
 	private String vehicleType;
 	private int parkingTime;
 	private int intendedDuration;
+	
 	private int numCars = 0;
 	private int numSmallCars = 0;
 	private int numBikes = 0;
+	
 	private int numDissatisfied = 0;
 	private int count = 0; //total number of vehicles. incremented when a vehicle is created.
 	private int alternativeCount = 0; //total number of alternatively parked vehicles. Incremented and decremented when parked.
 	
+	private String status = "";
 	
 	private int minStay = Constants.MINIMUM_STAY;
 	private int maxQueueTime = Constants.MAXIMUM_QUEUE_TIME;
@@ -95,6 +98,7 @@ public class CarPark {
 		this.maxSpaces = maxCarSpaces + maxSmallCarSpaces + maxMotorCycleSpaces;
 		spaces = new ArrayList<Vehicle>();
 		queue = new LinkedList<Vehicle>();
+		archive = new ArrayList<Vehicle>();
 	}
 
 	/**
@@ -117,6 +121,7 @@ public class CarPark {
 			exceptionIfNotInCarPark(departingVehicle); //if not in car park.
 			
 			if (currentTime >= departingVehicle.getDepartureTime() || forceDepart) {
+				System.out.println("CarPark.archiveDeparting calling unpark: archive.size = " + archive.size());
 				unparkVehicle(departingVehicle, time); //change state, remove from queue, add to archive.
 			}
 		}
@@ -146,7 +151,7 @@ public class CarPark {
 		
 		for(Vehicle newVehicle : copyOfQueue) {
 			exceptionIfNotQueued(newVehicle);
-			exceptionTimeConstraints(maxQueueTime +1, time);
+			//exceptionTimeConstraints(maxQueueTime +1, time);
 
 			int timeSpentInQueue = time - newVehicle.getArrivalTime();
 			
@@ -181,9 +186,9 @@ public class CarPark {
 	 */
 	public String finalState() {
 		String str = "Vehicles Processed: count:" + 
-				this.count + ", logged: " + this.past.size() 
+				this.count + ", logged: " + this.archive.size() 
 				+ "\nVehicle Record: \n";
-		for (Vehicle v : this.past) {
+		for (Vehicle v : this.archive) {
 			str += v.toString() + "\n\n";
 		}
 		return str + "\n";
@@ -232,9 +237,9 @@ public class CarPark {
 		+ this.count + "::" 
 		+ "P:" + this.spaces.size() + "::"
 		+ "C:" + this.numCars + "::S:" + this.numSmallCars 
-		+ "::M:" + this.numMotorCycles 
+		+ "::M:" + this.numBikes 
 		+ "::D:" + this.numDissatisfied 
-		+ "::A:" + this.past.size()  
+		+ "::A:" + this.archive.size()  
 		+ "::Q:" + this.queue.size(); 
 		for (Vehicle v : this.queue) {
 			if (v instanceof Car) {
@@ -274,17 +279,38 @@ public class CarPark {
 	 */
 	public void unparkVehicle(Vehicle v,int departureTime) throws VehicleException, SimulationException {
 		Vehicle departingVehicle = v;
+		vehicleType = getVehicleType(departingVehicle);
+		Iterator<Vehicle> spacesIterator = spaces.iterator();
 
 		exceptionIfNotInCarPark(departingVehicle); //tested
-		exceptionTimeConstraints(departureTime, minStay); //tested
+		//exceptionTimeConstraints(departureTime, minStay); //tested
 		exceptionIfQueued(departingVehicle); //tested
 		exceptionIfNotParked(departingVehicle); //tested
 		
+		while(spacesIterator.hasNext()) {
+			
+			if(spacesIterator.next().equals(departingVehicle)) { //find the vehicle in the car park
+				
+				spacesIterator.remove(); //remove the vehicle from the car park
+				break;
+			}
+		}	
+
 		departingVehicle.exitParkedState(departureTime);
 		this.archive.add(departingVehicle);
 		
-		
-		//System.out.println("FIRST ARCHIVE - " + this.archive.get(0));
+		switch (vehicleType) {
+			case "C": 
+				numCars--;
+				break;
+			case "S":
+				numCars--;
+				numSmallCars--;
+				break;
+			case "M":
+				numBikes--;
+				break;
+		}
 	}
 	
 	/**
@@ -325,6 +351,11 @@ public class CarPark {
 		this.parkingTime = time;
 		this.intendedDuration = intendedDuration;
         
+		System.out.println("Parking vehicle ID = " + parkingVehicle.getVehID());
+		System.out.println("isParked = " + parkingVehicle.isParked());
+		System.out.println("wasParked = " + parkingVehicle.wasParked());
+		System.out.println("");
+		
 		exceptionIfNoSpaces(parkingVehicle); //exception if there is no where to park
 											 //test combinations of park types
 		exceptionTimeConstraints(lastEntry, time); //exception if parking after last entry
@@ -332,22 +363,30 @@ public class CarPark {
 		exceptionTimeConstraints(closingTime, time);
 			
 		parkingVehicle.enterParkedState(this.parkingTime, this.intendedDuration); //vehicle enters a parked state
-			
+		
 		switch (vehicleType) { //switch on vehicle type
             case "C": //normal car
             	parkCar(parkingVehicle);
             	numCars++;
+            	count++;
             	break;
             case "S": //small car
             	parkSmallCar(parkingVehicle);
             	numSmallCars++; 
             	numCars++;
+            	count++;
                 break;
             case "M": //motorbike
             	parkMotorCycle(parkingVehicle);
             	numBikes++;
+            	count++;
                 break;
 		} //end switch
+		
+		System.out.println("Parking vehicle results in: ");
+		System.out.println("isParked = " + parkingVehicle.isParked());
+		System.out.println("wasParked = " + parkingVehicle.wasParked());
+		System.out.println("...............................");
 	} 
 
 	/**
@@ -498,6 +537,7 @@ public class CarPark {
 
 		queue.add(queueingVehicle); //add vehicle to queue.
 		queueingVehicle.enterQueuedState(); //change vehicle state to queued.
+		count++;
 	}
 	
 	/**
@@ -561,6 +601,20 @@ public class CarPark {
 	 */
 	@Override
 	public String toString() {
+		StringBuilder result = new StringBuilder();
+	    String NEW_LINE = System.getProperty("line.separator");
+	
+	    result.append("This CarPark {"+NEW_LINE);
+	    result.append("Number of large cars: "+ (this.numCars-this.numSmallCars) +NEW_LINE);
+	    result.append("Number of small cars: "+ this.numSmallCars +NEW_LINE);
+	    result.append("Total number of cars: "+ this.numCars +NEW_LINE);
+	    result.append("Number of bikes: "+ this.numBikes +NEW_LINE);
+	    result.append("Total vehicles: "+ this.count +NEW_LINE);
+	    result.append("Size of queue: "+ this.queue.size() +NEW_LINE);
+	    result.append("Number of dissatisfied customers: "+this.numDissatisfied+NEW_LINE);
+	    result.append("Archive: "+this.archive+NEW_LINE);
+	    result.append("}");
+	    return result.toString();
 	}
 	
 	//////////////////////////////////
@@ -577,33 +631,30 @@ public class CarPark {
 	public void tryProcessNewVehicles(int time,Simulator sim) throws VehicleException, SimulationException {
 		//can not run after closing time.
 		exceptionTimeConstraints(closingTime, time);
-		
+
 		Boolean createNewCar = false;
 		Boolean createNewSmallCar = false;
 		Boolean createNewBike = false;
-		String vehicleType = "";
 		int duration;
 		
 		//RNG vehicle tests
 		createNewCar = sim.newCarTrial();
-		createNewSmallCar = sim.smallCarTrial();
+		createNewSmallCar = createNewCar && sim.smallCarTrial();
 		createNewBike = sim.motorCycleTrial();
 		duration = sim.setDuration();
 		
-		//check to see if a vehicle has arrived.
-		if (createNewCar) {
-			vehicleType = "C";
-		} else if (createNewSmallCar) {
-			vehicleType = "S";
-		} else if (createNewBike) { 
-			vehicleType = "M";
+		//check to see if a car has arrived.
+		if (createNewSmallCar) {
+			processNewVehicle("S", time, duration);
+			
+		} else if (createNewCar) {
+			processNewVehicle("C", time, duration);
 		} 
-
-		//if a vehicle has arrived it gets processed.
-		if (vehicleType != "") {
-			processNewVehicle(vehicleType, time, duration);
-			count++;
-		}
+		
+		//check if a bike has arrived
+		if (createNewBike) { 
+			processNewVehicle("M", time, duration);	
+		} 
 	}
 	
 	/******************************
@@ -621,15 +672,15 @@ public class CarPark {
 		
 		switch (vehicleType) {
 			case "C": 
-				newVehicle = createCar(!isSmall, vehicleType);
+				newVehicle = createCar(!isSmall, vehicleType, time);
 				processCar(newVehicle, time, duration);
 				break;
 			case "S":
-				newVehicle = createCar(isSmall, vehicleType);
+				newVehicle = createCar(isSmall, vehicleType, time);
 				processSmallCar(newVehicle, time, duration);
 				break;
 			case "M":
-				newVehicle = createBike(vehicleType);
+				newVehicle = createBike(vehicleType, time);
 				processBike(newVehicle, time, duration);
 				break;
 		}
@@ -642,9 +693,9 @@ public class CarPark {
 	 * @return Vehicle newCar
 	 * @throws VehicleException
 	 **********************************/
-	private Vehicle createCar(Boolean isSmall, String vehicleType) throws VehicleException {
+	private Vehicle createCar(Boolean isSmall, String vehicleType, int time) throws VehicleException {
 		String newVehId = vehicleType + count;
-		Vehicle newCar = new Car(newVehId, intendedDuration, isSmall);
+		Vehicle newCar = new Car(newVehId, time, isSmall);
 		return newCar;
 	}
 	
@@ -655,9 +706,9 @@ public class CarPark {
 	 * @return Vehicle newCar
 	 * @throws VehicleException
 	 **********************************/
-	private Vehicle createBike(String vehicleType) throws VehicleException {
+	private Vehicle createBike(String vehicleType, int time) throws VehicleException {
 		String newVehId = vehicleType + count;
-		Vehicle newBike = new MotorCycle(newVehId, intendedDuration);
+		Vehicle newBike = new MotorCycle(newVehId, time);
 		return newBike;
 	}
 	
