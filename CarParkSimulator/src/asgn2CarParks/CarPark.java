@@ -158,6 +158,8 @@ public class CarPark {
 				exitQueue(newVehicle, time);
 				archive.add(newVehicle);
 				this.numDissatisfied++;
+				System.out.println(getVehicleType(newVehicle) + " - queue failure at time " + time + " - Time in Queue " + timeSpentInQueue
+						+" - availality: C " + availableCarSpaces + " S " + availableSmallCarSpaces + " M " + availableBikesSpaces );
 			}
 		}
 	}
@@ -175,7 +177,7 @@ public class CarPark {
 	 * @return true if car park full, false otherwise
 	 */
 	public boolean carParkFull() {
-		return (this.spaces.size() == this.maxSpaces);
+		return (numCars + numBikes >= this.maxSpaces);
 	}
 	
 	/**
@@ -308,7 +310,7 @@ public class CarPark {
 		
 		exceptionIfNoSpaces(parkingVehicle); //exception if there is no where to park
 											 //test combinations of park types
-		exceptionTimeConstraints(lastEntry, time); //exception if parking after last entry
+		//exceptionTimeConstraints(lastEntry, time); //exception if parking after last entry
 		exceptionIfParked(parkingVehicle);
 		exceptionTimeConstraints(closingTime, time);
 			
@@ -405,13 +407,16 @@ public class CarPark {
 		switch (vehicleType) {
 			case "C": 
 				numCars--;
+				availableCarSpaces++;
 				break;
 			case "S":
 				numCars--;
 				numSmallCars--;
+				availableCarSpaces++;
 				break;
 			case "M":
 				numBikes--;
+				availableBikesSpaces++;
 				break;
 		}
 	}
@@ -506,20 +511,19 @@ public class CarPark {
 	 * @author Steven
 	 */
 	public void processQueue(int time, Simulator sim) throws VehicleException, SimulationException {
-		int duration;
-		Vehicle queuedVehicle;
-		
-		while (spacesAvailable(queue.peek())) { //when a position becomes available park the vehicle.
-			queuedVehicle = queue.element(); //retrieve the first vehicle in the que, but not remove it.
-			
+		int duration = sim.setDuration();
+		ArrayList<Vehicle> copyOfQueue = new ArrayList<Vehicle>(queue);
+
+		for(Vehicle queuedVehicle : copyOfQueue) {
+				
 			exceptionIfNotQueued(queuedVehicle); //make sure the vehicle is in a Queued State.
-			exceptionTimeConstraints(closingTime, time); //exception if after close.
-			
-			exitQueue(queuedVehicle, time); //remove first vehicle from the que, and change it's state.
-			duration = sim.setDuration(); 
-			parkVehicle(queuedVehicle, time, duration);	//park the now de-queued vehicle.
-			//status += setVehicleMsg(parkingVehicle, queue, park);
-		}	
+			exceptionTimeConstraints(closingTime, time); //exception if after close.					
+				
+			if(spacesAvailable(queuedVehicle)) {				
+				exitQueue(queuedVehicle, time);
+				parkVehicle(queuedVehicle, time, duration);
+			}
+		}
 	}
 	
 	/**
@@ -579,11 +583,7 @@ public class CarPark {
 	 * @return true if queue empty, false otherwise
 	 */
 	public boolean queueEmpty() {
-		if (queue.peek() == null) {
-			return true;
-		} else {
-			return false;
-		}
+		return queue.size() <= 0;
 	}
 
 	/**
@@ -591,11 +591,7 @@ public class CarPark {
 	 * @return true if queue full, false otherwise
 	 */
 	public boolean queueFull() {
-		if (numVehiclesInQueue() == maxQueueSize) {
-			return true;
-		} else {
-			return false;
-		}
+		return (numVehiclesInQueue() >= maxQueueSize);
 	}
 	
 	/* (non-Javadoc)

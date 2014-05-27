@@ -70,6 +70,7 @@ public class SimulationRunner {
 				this.carPark.tryProcessNewVehicles(time,this.sim);
 			}
 			
+			//System.out.println(carPark.getNumCars());
 			if (time == 150) {
 				System.out.println("time = 150");
 				System.out.println(carPark.toString());
