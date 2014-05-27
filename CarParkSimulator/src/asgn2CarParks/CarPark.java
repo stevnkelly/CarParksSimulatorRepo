@@ -319,19 +319,12 @@ public class CarPark {
 		switch (vehicleType) { //switch on vehicle type
             case "C": //normal car
             	parkCar(parkingVehicle);
-            	numCars++;
-            	count++;
             	break;
             case "S": //small car
             	parkSmallCar(parkingVehicle);
-            	numSmallCars++; 
-            	numCars++;
-            	count++;
                 break;
             case "M": //motorbike
             	parkMotorCycle(parkingVehicle);
-            	numBikes++;
-            	count++;
                 break;
 		} //end switch
 	} 
@@ -395,6 +388,7 @@ public class CarPark {
 	// HELPER METHODS FOR PARKING
 	/////////////////////////////////////////////
 	
+	
 	/***************************************
 	 * decrements counters depening on the vehicle type.
 	 * is called by unparkVehicle.
@@ -412,6 +406,7 @@ public class CarPark {
 			case "S":
 				numCars--;
 				numSmallCars--;
+				availableSmallCarSpaces++;
 				availableCarSpaces++;
 				break;
 			case "M":
@@ -421,39 +416,61 @@ public class CarPark {
 		}
 	}
 	
+	
+	/***
+	 * add vehicle to storage and increment relevant counters.
+	 * @param parkingVehicle
+	 * @author steven
+	 */
 	private void parkCar(Vehicle parkingVehicle) {
+    	numCars++;
+    	count++;
 		availableCarSpaces--;
 		spaces.add(parkingVehicle);
-		//System.out.println(spaces.get(0).getVehID());
 	}
 	
+	/***
+	 * add vehicle to storage and increment relevant counters.
+	 * @param parkingVehicle
+	 * @author steven
+	 */
 	private void parkSmallCar(Vehicle parkingVehicle) {
+		numSmallCars++; 
+    	numCars++;
+    	count++; 
     	
-		if (!smallCarsFull()) { //fill the small spaces first.
-    		availableSmallCarSpaces--;
+		if (!smallCarsFull()) { //fill the small spaces first.   		
     		spaces.add(parkingVehicle);
+    		availableSmallCarSpaces--;
     		
     	} else { //before moving into the general car spaces.
-    		availableCarSpaces--;
     		alternativeParking(parkingVehicle);
+    		availableCarSpaces--;
     	}
 	}
 	
+	/***
+	 * add vehicle to storage and increment relevant counters.
+	 * @param parkingVehicle
+	 * @author steven
+	 */
 	private void parkMotorCycle(Vehicle parkingVehicle) {
-
+    	numBikes++;
+    	count++;
+    	
     	if (!bikesFull()) { //fill the bike spaces first.
-    		availableBikesSpaces--;
     		spaces.add(parkingVehicle);
+    		availableBikesSpaces--;
     		
     	} else { //before moving into the small vehicle spaces.
-    		availableSmallCarSpaces--;
     		alternativeParking(parkingVehicle);
+    		availableSmallCarSpaces--;
     	}
 	}
 	
 	/**
-	 * Helper method to increment global space count, alternative space count, and store the vehicle
-	 * in the alternative spaces list.
+	 * Helper method to increment alternative space count, store the vehicle
+	 * in the car park storage, and record it in the alternative spaces list.
 	 * @param parkingVehicle
 	 */
 	private void alternativeParking(Vehicle parkingVehicle) {
@@ -461,17 +478,14 @@ public class CarPark {
 		alternativeSpaces.add(parkingVehicle);
 		alternativeCount++;
 	}
+	
 
 	/******************************************
 	 * returns true if all normal car spaces have been occupied.
 	 * @return
 	 *******************************************/
 	private boolean carsFull() {
-		if (availableCarSpaces == 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return (availableCarSpaces == 0);
 	}
 	
 	/********************************************
@@ -479,22 +493,14 @@ public class CarPark {
 	 * @return
 	 **************************************/
 	private boolean smallCarsFull() {
-		if ((availableSmallCarSpaces == 0) && (availableCarSpaces == 0)) {
-			return true;
-		} else {
-			return false;
-		}
+		return ((availableSmallCarSpaces == 0) && (availableCarSpaces == 0));
 	}
 	
 	/******************************************
 	 * true if both bike spaces and small car spaces are all full.
 	 *******************************************/
 	private boolean bikesFull() {
-		if ((availableBikesSpaces == 0) && (availableSmallCarSpaces == 0) ) {
-			return true;
-		} else {
-			return false;
-		}
+		return ((availableBikesSpaces == 0) && (availableSmallCarSpaces == 0));
 	}
 	
 	////////////////////////////////////
@@ -655,6 +661,7 @@ public class CarPark {
 		} 
 	}
 	
+	
 	/******************************
 	 * Helper method for tryProcessVehicle. Performs switch based on vehicleType and issues
 	 * instructinos to create and attempt to park / queue / archive the vehicle appropriately.
@@ -683,6 +690,7 @@ public class CarPark {
 				break;
 		}
 	}
+	
 	
 	/**********************************
 	 * returns a small or normal car
@@ -893,12 +901,13 @@ public class CarPark {
 	 * @param v
 	 * @throws VehicleException
 	 * @author Steven
-	 ***********************************/
+	 ***********************************/	
 	private void exceptionIfParked(Vehicle v) throws VehicleException {
 		if (v.isParked()) {
 			throw new VehicleException("The vehicle was not expected to be in a Parked state.");
 		}
 	}
+
 
 	/***************************
 	 * Exception if vehicle is not new.
