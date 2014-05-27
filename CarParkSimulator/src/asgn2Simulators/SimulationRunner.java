@@ -71,8 +71,7 @@ public class SimulationRunner {
 			}
 			
 			//System.out.println(carPark.getNumCars());
-			if (time == 150) {
-				System.out.println("time = 150");
+			if (time == Constants.CLOSING_TIME -1) {
 				System.out.println(carPark.toString());
 			}
 			
