@@ -120,8 +120,8 @@ public class CarParkTests {
 	 ********************************************/
 	@Test(expected = VehicleException.class)
 	public void unparkVehicleException() throws SimulationException, VehicleException {
-		testCarPark.parkVehicle(testCar, 2, intendedDuration);
-		testCarPark.unparkVehicle(testCar, 1);
+		testCarPark.parkVehicle(testCar, 200, intendedDuration);
+		testCarPark.unparkVehicle(testCar, 199);
 	}
 	
 	/////////////////////////////////////////

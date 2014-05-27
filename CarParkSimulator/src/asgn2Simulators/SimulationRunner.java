@@ -69,11 +69,19 @@ public class SimulationRunner {
 			if (newVehiclesAllowed(time)) { 
 				this.carPark.tryProcessNewVehicles(time,this.sim);
 			}
+			
+			if (time == 150) {
+				System.out.println("time = 150");
+				System.out.println(carPark.toString());
+			}
+			
 			//Log progress 
 			this.log.logEntry(time,this.carPark);
 		}
-		this.log.finalise(this.carPark);
-	}
+		//this.log.finalise(this.carPark);
+		System.out.println("Car park is closed");
+		System.out.println(carPark.toString());
+	} 
 
 	/**
 	 * Main program for the simulation 

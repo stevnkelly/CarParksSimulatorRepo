@@ -48,7 +48,7 @@ public abstract class Vehicle {
 	private int arrivalTime;
 	private int parkingTime;
 	private int queueingTime;
-	private int departureTime;
+	private int departureTime = 0;
 	private int intendedDuration;
 	private char state;
 	private boolean wasParked;
@@ -103,7 +103,7 @@ public abstract class Vehicle {
 			state = 'P';
 			wasParked = true;
 			this.parkingTime = parkingTime;
-			this.intendedDuration = intendedDuration;
+			this.departureTime = intendedDuration;
 			isSatisfied = true;
 		}
 	}

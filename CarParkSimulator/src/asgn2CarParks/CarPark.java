@@ -121,7 +121,6 @@ public class CarPark {
 			exceptionIfNotInCarPark(departingVehicle); //if not in car park.
 			
 			if (currentTime >= departingVehicle.getDepartureTime() || forceDepart) {
-				System.out.println("CarPark.archiveDeparting calling unpark: archive.size = " + archive.size());
 				unparkVehicle(departingVehicle, time); //change state, remove from queue, add to archive.
 			}
 		}
@@ -270,50 +269,6 @@ public class CarPark {
 	}
 	
 	/**
-	 * Method to remove vehicle from the carpark. 
-	 * For symmetry with parkVehicle, include transition via Vehicle.exitParkedState.  
-	 * So vehicle should be in parked state prior to entry to this method. 
-	 * @param v Vehicle to be removed from the car park 
-	 * @throws VehicleException if Vehicle is not parked, is in a queue, or violates timing constraints 
-	 * @throws SimulationException if vehicle is not in car park
-	 */
-	public void unparkVehicle(Vehicle v,int departureTime) throws VehicleException, SimulationException {
-		Vehicle departingVehicle = v;
-		vehicleType = getVehicleType(departingVehicle);
-		Iterator<Vehicle> spacesIterator = spaces.iterator();
-
-		exceptionIfNotInCarPark(departingVehicle); //tested
-		//exceptionTimeConstraints(departureTime, minStay); //tested
-		exceptionIfQueued(departingVehicle); //tested
-		exceptionIfNotParked(departingVehicle); //tested
-		
-		while(spacesIterator.hasNext()) {
-			
-			if(spacesIterator.next().equals(departingVehicle)) { //find the vehicle in the car park
-				
-				spacesIterator.remove(); //remove the vehicle from the car park
-				break;
-			}
-		}	
-
-		departingVehicle.exitParkedState(departureTime);
-		this.archive.add(departingVehicle);
-		
-		switch (vehicleType) {
-			case "C": 
-				numCars--;
-				break;
-			case "S":
-				numCars--;
-				numSmallCars--;
-				break;
-			case "M":
-				numBikes--;
-				break;
-		}
-	}
-	
-	/**
 	 * Helper to set vehicle message for transitions 
 	 * @param v Vehicle making a transition (uses S,C,M)
 	 * @param source String holding starting state of vehicle (N,Q,P) 
@@ -350,11 +305,6 @@ public class CarPark {
 		Vehicle parkingVehicle = v;
 		this.parkingTime = time;
 		this.intendedDuration = intendedDuration;
-        
-		System.out.println("Parking vehicle ID = " + parkingVehicle.getVehID());
-		System.out.println("isParked = " + parkingVehicle.isParked());
-		System.out.println("wasParked = " + parkingVehicle.wasParked());
-		System.out.println("");
 		
 		exceptionIfNoSpaces(parkingVehicle); //exception if there is no where to park
 											 //test combinations of park types
@@ -382,11 +332,6 @@ public class CarPark {
             	count++;
                 break;
 		} //end switch
-		
-		System.out.println("Parking vehicle results in: ");
-		System.out.println("isParked = " + parkingVehicle.isParked());
-		System.out.println("wasParked = " + parkingVehicle.wasParked());
-		System.out.println("...............................");
 	} 
 
 	/**
@@ -414,9 +359,62 @@ public class CarPark {
 		return spacesAvailable;
 	}
 	
+	/**
+	 * Method to remove vehicle from the carpark. 
+	 * For symmetry with parkVehicle, include transition via Vehicle.exitParkedState.  
+	 * So vehicle should be in parked state prior to entry to this method. 
+	 * @param v Vehicle to be removed from the car park 
+	 * @throws VehicleException if Vehicle is not parked, is in a queue, or violates timing constraints 
+	 * @throws SimulationException if vehicle is not in car park
+	 */
+	public void unparkVehicle(Vehicle v,int departureTime) throws VehicleException, SimulationException {
+		Vehicle departingVehicle = v;
+		Iterator<Vehicle> spacesIterator = spaces.iterator();
+
+		exceptionIfNotInCarPark(departingVehicle); //tested
+		//exceptionTimeConstraints(departureTime, minStay); //tested
+		exceptionIfQueued(departingVehicle); //tested
+		exceptionIfNotParked(departingVehicle); //tested
+		
+		while(spacesIterator.hasNext()) {
+		
+			if(spacesIterator.next().equals(departingVehicle)) { //find the vehicle in the car park
+				
+				spacesIterator.remove(); //remove the vehicle from the car park
+				break;
+			}
+		}	
+		departingVehicle.exitParkedState(departureTime);
+		this.archive.add(departingVehicle);
+		decrementCounters(departingVehicle);
+	}
+	
 	////////////////////////////////////////////
 	// HELPER METHODS FOR PARKING
 	/////////////////////////////////////////////
+	
+	/***************************************
+	 * decrements counters depening on the vehicle type.
+	 * is called by unparkVehicle.
+	 * @param departingVehicle
+	 * @author Steven
+	 ***********************************/
+	private void decrementCounters(Vehicle departingVehicle) {
+		vehicleType = getVehicleType(departingVehicle);
+
+		switch (vehicleType) {
+			case "C": 
+				numCars--;
+				break;
+			case "S":
+				numCars--;
+				numSmallCars--;
+				break;
+			case "M":
+				numBikes--;
+				break;
+		}
+	}
 	
 	private void parkCar(Vehicle parkingVehicle) {
 		availableCarSpaces--;
@@ -493,6 +491,10 @@ public class CarPark {
 			return false;
 		}
 	}
+	
+	////////////////////////////////////
+	// QUEUE METHODS
+	///////////////////////////////
 	
 	/**
 	 * Silently process elements in the queue, whether empty or not. If possible, add them to the car park. 
@@ -604,7 +606,7 @@ public class CarPark {
 		StringBuilder result = new StringBuilder();
 	    String NEW_LINE = System.getProperty("line.separator");
 	
-	    result.append("This CarPark {"+NEW_LINE);
+	    result.append("This CarPark: "+NEW_LINE);
 	    result.append("Number of large cars: "+ (this.numCars-this.numSmallCars) +NEW_LINE);
 	    result.append("Number of small cars: "+ this.numSmallCars +NEW_LINE);
 	    result.append("Total number of cars: "+ this.numCars +NEW_LINE);
@@ -612,8 +614,8 @@ public class CarPark {
 	    result.append("Total vehicles: "+ this.count +NEW_LINE);
 	    result.append("Size of queue: "+ this.queue.size() +NEW_LINE);
 	    result.append("Number of dissatisfied customers: "+this.numDissatisfied+NEW_LINE);
-	    result.append("Archive: "+this.archive+NEW_LINE);
-	    result.append("}");
+	    result.append("Archive: "+this.archive.size()+NEW_LINE);
+	    result.append("");
 	    return result.toString();
 	}
 	
@@ -772,6 +774,7 @@ public class CarPark {
 		}
 	}
 	
+	
 	/**
 	 * Helper method to extract the vehicle type from a vehicle object. Type is set in the vehicle id when the vehicle is
 	 * created.
@@ -912,6 +915,5 @@ public class CarPark {
 			throw new SimulationException("The vehicle was either parked or queued, so it is not new.");
 		}
 	}
-	
-	
+
 }
