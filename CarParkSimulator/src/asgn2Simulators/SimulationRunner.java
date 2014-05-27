@@ -73,7 +73,7 @@ public class SimulationRunner {
 			//System.out.println(carPark.getNumCars());
 			if (time == Constants.CLOSING_TIME -1) {
 				System.out.println(carPark.toString());
-			}
+			}//asdf
 			
 			//Log progress 
 			this.log.logEntry(time,this.carPark);

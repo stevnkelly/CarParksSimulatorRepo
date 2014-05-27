@@ -40,7 +40,7 @@ import asgn2Vehicles.Vehicle;
  */
 public class CarPark {
 	
-	private Queue<Vehicle> queue;
+	private ArrayList<Vehicle> queue;
 	private ArrayList<Vehicle> spaces; //simulates the car park storage for all currently parked cars.
 	private ArrayList<Vehicle> alternativeSpaces; //tracks the vehicles currently parking in an alternative park.
 	private ArrayList<Vehicle> archive;
@@ -97,7 +97,7 @@ public class CarPark {
 		this.maxMotorCycleSpaces = maxMotorCycleSpaces;
 		this.maxSpaces = maxCarSpaces + maxSmallCarSpaces + maxMotorCycleSpaces;
 		spaces = new ArrayList<Vehicle>();
-		queue = new LinkedList<Vehicle>();
+		queue = new ArrayList<Vehicle>();
 		archive = new ArrayList<Vehicle>();
 	}
 
@@ -158,6 +158,7 @@ public class CarPark {
 				exitQueue(newVehicle, time);
 				archive.add(newVehicle);
 				this.numDissatisfied++;
+				
 				System.out.println(getVehicleType(newVehicle) + " - queue failure at time " + time + " - Time in Queue " + timeSpentInQueue
 						+" - availality: C " + availableCarSpaces + " S " + availableSmallCarSpaces + " M " + availableBikesSpaces );
 			}
@@ -337,17 +338,20 @@ public class CarPark {
 	 */
 	public boolean spacesAvailable(Vehicle v) {
 		Boolean spacesAvailable = false;
-		if (v != null) {
+		if (carParkFull() && (v != null) ) {
+			return false;
+		} else { 
+
 			vehicleType = getVehicleType(v); //extract vehicle type from vehicle id
 			switch (vehicleType) { //switch on vehicle type
 	            case "C": //normal car
 	            	spacesAvailable = !carsFull(); //if car spaces are not full, there is room for more!
 	            	break;
 	            case "S": //small car
-	            	spacesAvailable = !smallCarsFull(); //if small car spaces are not full, there is room for more!
+	            	spacesAvailable = (!smallCarsFull() && !carsFull()); //if small car spaces are not full, there is room for more!
 	            	break;
 	            case "M": //motorbike
-	            	spacesAvailable = !bikesFull(); //if motor bike spaces are not full, there is room for more!
+	            	spacesAvailable = (!bikesFull() && !smallCarsFull()); //if motor bike spaces are not full, there is room for more!
 	            	break;
 	        } //end switch
 		}//end if
@@ -485,7 +489,7 @@ public class CarPark {
 	 * @return
 	 *******************************************/
 	private boolean carsFull() {
-		return (availableCarSpaces == 0);
+		return (availableCarSpaces <= 0);
 	}
 	
 	/********************************************
@@ -493,7 +497,7 @@ public class CarPark {
 	 * @return
 	 **************************************/
 	private boolean smallCarsFull() {
-		return ((availableSmallCarSpaces == 0) && (availableCarSpaces == 0));
+		return ((availableSmallCarSpaces <= 0) && (availableCarSpaces <= 0));
 	}
 	
 	/******************************************
@@ -518,15 +522,16 @@ public class CarPark {
 	 */
 	public void processQueue(int time, Simulator sim) throws VehicleException, SimulationException {
 		int duration = sim.setDuration();
+		
 		ArrayList<Vehicle> copyOfQueue = new ArrayList<Vehicle>(queue);
-
+		
 		for(Vehicle queuedVehicle : copyOfQueue) {
 				
 			exceptionIfNotQueued(queuedVehicle); //make sure the vehicle is in a Queued State.
 			exceptionTimeConstraints(closingTime, time); //exception if after close.					
 				
 			if(spacesAvailable(queuedVehicle)) {				
-				exitQueue(queuedVehicle, time);
+				exitQueue(queuedVehicle, time); //exitQueuedState, and parked or archived.
 				parkVehicle(queuedVehicle, time, duration);
 			}
 		}
@@ -564,15 +569,21 @@ public class CarPark {
 	 */
 	public void exitQueue(Vehicle v,int exitTime) throws SimulationException, VehicleException {
 		Vehicle exitingVehicle = v;
-
+		
 		exceptionTimeConstraints(closingTime, exitTime); //exception if exit after close
 		exceptionIfNotQueued(exitingVehicle); //exception is not already in queued state
 		exceptionIfParked(exitingVehicle); //exception if in parked state
 		exceptionIfNotInQueue(exitingVehicle); //exception if not in queue
+
+		Iterator<Vehicle> queueIterator = queue.iterator();
+
+		while(queueIterator.hasNext()) {
+			if(queueIterator.next().equals(exitingVehicle)) {
+				queueIterator.remove();
+			 }
+		}
 		
 		exitingVehicle.exitQueuedState(exitTime); //removing queued state;
-		queue.remove(exitingVehicle); //remove from queue;
-		
 	}
 	
 	/**
@@ -580,8 +591,7 @@ public class CarPark {
 	 * @return number of vehicles in the queue
 	 */
 	public int numVehiclesInQueue() {
-		int numVehiclesInQueue = queue.size();
-		return numVehiclesInQueue;
+		return queue.size(); 
 	}
 	
 	/**
@@ -597,7 +607,7 @@ public class CarPark {
 	 * @return true if queue full, false otherwise
 	 */
 	public boolean queueFull() {
-		return (numVehiclesInQueue() >= maxQueueSize);
+		return numVehiclesInQueue() >= maxQueueSize;
 	}
 	
 	/* (non-Javadoc)
@@ -634,150 +644,65 @@ public class CarPark {
 	 */
 	public void tryProcessNewVehicles(int time,Simulator sim) throws VehicleException, SimulationException {
 		//can not run after closing time.
+	
+		System.out.println(time + " " + "Avail C " + availableCarSpaces + " S " + availableSmallCarSpaces + " M " + availableBikesSpaces 
+				+ " Q - " + numVehiclesInQueue() + " Spaces " + ( maxSpaces - spaces.size()));
+		
+//		for (int i = 0; i < 10; i++) {
+//			Vehicle testCar = new Car(("test" + i ), 1, true);
+//			enterQueue(testCar);
+//		}
+		
 		exceptionTimeConstraints(closingTime, time);
 
-		Boolean createNewCar = false;
-		Boolean createNewSmallCar = false;
-		Boolean createNewBike = false;
-		int duration;
+		Boolean createNewCar = sim.newCarTrial();
+		Boolean createNewSmallCar = sim.smallCarTrial();
+		Boolean createNewBike = sim.motorCycleTrial();
 		
-		//RNG vehicle tests
-		createNewCar = sim.newCarTrial();
-		createNewSmallCar = createNewCar && sim.smallCarTrial();
-		createNewBike = sim.motorCycleTrial();
-		duration = sim.setDuration();
+		int duration = sim.setDuration();
+		
+		Vehicle newVehicle;
 		
 		//check to see if a car has arrived.
 		if (createNewSmallCar) {
-			processNewVehicle("S", time, duration);
+			String newVehId = "S" + count;
+			newVehicle = new Car(newVehId, time, true);
+			processNewVehicle(newVehicle, time, duration);
 			
 		} else if (createNewCar) {
-			processNewVehicle("C", time, duration);
-		} 
+			String newVehId = "C" + count;
+			newVehicle = new Car(newVehId, time, false);
+			processNewVehicle(newVehicle, time, duration);
+		}
 		
-		//check if a bike has arrived
 		if (createNewBike) { 
-			processNewVehicle("M", time, duration);	
+			String newVehId = "M" + count;
+			newVehicle = new MotorCycle(newVehId, time);
+			processNewVehicle(newVehicle, time, duration);
 		} 
 	}
 	
 	
 	/******************************
-	 * Helper method for tryProcessVehicle. Performs switch based on vehicleType and issues
-	 * instructinos to create and attempt to park / queue / archive the vehicle appropriately.
+	 * Helper method for tryProcessVehicle. 
+	 * park / queue / archive the vehicle appropriately.
 	 * @param vehicleType
 	 * @param time
 	 * @param duration
 	 * @throws VehicleException
 	 * @throws SimulationException
 	 *********************************/
-	private void processNewVehicle(String vehicleType, int time, int duration) throws VehicleException, SimulationException {
-		Vehicle newVehicle;
-		Boolean isSmall = true;
+	private void processNewVehicle(Vehicle newVehicle, int time, int duration) throws VehicleException, SimulationException {
+		Boolean queueFull = this.queueFull();
 		
-		switch (vehicleType) {
-			case "C": 
-				newVehicle = createCar(!isSmall, vehicleType, time);
-				processCar(newVehicle, time, duration);
-				break;
-			case "S":
-				newVehicle = createCar(isSmall, vehicleType, time);
-				processSmallCar(newVehicle, time, duration);
-				break;
-			case "M":
-				newVehicle = createBike(vehicleType, time);
-				processBike(newVehicle, time, duration);
-				break;
-		}
-	}
-	
-	
-	/**********************************
-	 * returns a small or normal car
-	 * @param isSmall
-	 * @param vehicleType
-	 * @return Vehicle newCar
-	 * @throws VehicleException
-	 **********************************/
-	private Vehicle createCar(Boolean isSmall, String vehicleType, int time) throws VehicleException {
-		String newVehId = vehicleType + count;
-		Vehicle newCar = new Car(newVehId, time, isSmall);
-		return newCar;
-	}
-	
-	/**********************************
-	 * returns a new bike
-	 * @param isSmall
-	 * @param vehicleType
-	 * @return Vehicle newCar
-	 * @throws VehicleException
-	 **********************************/
-	private Vehicle createBike(String vehicleType, int time) throws VehicleException {
-		String newVehId = vehicleType + count;
-		Vehicle newBike = new MotorCycle(newVehId, time);
-		return newBike;
-	}
-	
-	/**
-	 * send the car where it belongs
-	 * @param newCar
-	 * @param time
-	 * @param duration
-	 * @throws VehicleException
-	 * @throws SimulationException
-	 */
-	private void processCar(Vehicle newCar, int time, int duration) throws VehicleException, SimulationException {
-		Boolean queueEmpty = this.queueEmpty();
-
-		if (spacesAvailable(newCar)) { 
-			this.parkVehicle(newCar, time, duration);
-		} else if (queueEmpty) { 
-			this.enterQueue(newCar);
+		if (spacesAvailable(newVehicle)) { 
+			this.parkVehicle(newVehicle, time, duration);
+		} else if (!queueFull) { 
+			this.enterQueue(newVehicle);
 		} else {
-			this.archiveNewVehicle(newCar);
+			this.archiveNewVehicle(newVehicle);
 		}
 	}
-	
-	/**
-	 * send the small car to where it belongs
-	 * @param newCar
-	 * @param time
-	 * @param duration
-	 * @throws VehicleException
-	 * @throws SimulationException
-	 */
-	private void processSmallCar(Vehicle newCar, int time, int duration) throws VehicleException, SimulationException {
-		Boolean queueEmpty = this.queueEmpty();
-
-		if (spacesAvailable(newCar)) { 
-			this.parkVehicle(newCar, time, duration);
-		} else if (queueEmpty) { 
-			this.enterQueue(newCar);
-		} else {
-			this.archiveNewVehicle(newCar);
-		}
-	}
-	
-	/**
-	 * send the bike to where it belongs
-	 * @param newBike
-	 * @param time
-	 * @param duration
-	 * @throws VehicleException
-	 * @throws SimulationException
-	 */
-	private void processBike(Vehicle newBike, int time, int duration) throws VehicleException, SimulationException {
-		Boolean queueEmpty = this.queueEmpty();
-
-		if (spacesAvailable(newBike)) { 
-			this.parkVehicle(newBike, time, duration);
-		} else if (queueEmpty) { 
-			this.enterQueue(newBike);
-		} else {
-			this.archiveNewVehicle(newBike);
-		}
-	}
-	
 	
 	/**
 	 * Helper method to extract the vehicle type from a vehicle object. Type is set in the vehicle id when the vehicle is
@@ -907,7 +832,6 @@ public class CarPark {
 			throw new VehicleException("The vehicle was not expected to be in a Parked state.");
 		}
 	}
-
 
 	/***************************
 	 * Exception if vehicle is not new.
