@@ -51,6 +51,7 @@ public class CarPark {
 	private int numCars = 0;
 	private int numSmallCars = 0;
 	private int numBikes = 0;
+	private int numDissatisfied = 0;
 	private int count = 0; //total number of vehicles. incremented when a vehicle is created.
 	private int alternativeCount = 0; //total number of alternatively parked vehicles. Incremented and decremented when parked.
 	
@@ -107,13 +108,16 @@ public class CarPark {
 	public void archiveDepartingVehicles(int time,boolean force) throws VehicleException, SimulationException {
 		//copy of ArrayList spaces to prevent conflicts when writing to that vehicle.
 		ArrayList<Vehicle> copyOfSpaces = new ArrayList<Vehicle>(spaces);
+		int currentTime = time;
+		boolean forceDepart = force;
 		
 		for(Vehicle departingVehicle : copyOfSpaces) { //each item in spaces
 			
 			exceptionIfNotParked(departingVehicle); //if departing vehicle is not parked.
+			exceptionIfNotInCarPark(departingVehicle); //if not in car park.
 			
-			if (time >= departingVehicle.getDepartureTime() || force) {
-						unparkVehicle(departingVehicle, time);
+			if (currentTime >= departingVehicle.getDepartureTime() || forceDepart) {
+				unparkVehicle(departingVehicle, time); //change state, remove from queue, add to archive.
 			}
 		}
 	}
@@ -125,28 +129,33 @@ public class CarPark {
 	 * @throws SimulationException if vehicle is currently queued or parked
 	 */
 	public void archiveNewVehicle(Vehicle v) throws SimulationException {
-		
+		Vehicle newVehicle = v;
+		exceptionIfNotNew(newVehicle);
+		archive.add(newVehicle);
+		this.numDissatisfied++;
 	}
+	
 	
 	/**
 	 * Archive vehicles which have stayed in the queue too long 
 	 * @param time int holding current simulation time 
 	 * @throws VehicleException if one or more vehicles not in the correct state or if timing constraints are violated
 	 */
-	public void archiveQueueFailures(int time) throws VehicleException {
-		// - Podcast 1
-		//maintain que, maintain failures
-		//concerned with archive, concerned with que
-		//in carpark manage physical management of vehicles - the data structure
-		//also manage the vehicle state so that when we come back we can look at the vehicle and 
-		//see when it arrived, queued, whether it left the que, and if it was successfully parked for how long.
-		//checking to see if the queue is empty, if not keep looking at the elements until we have exausted 
-		//those which are staying too long. when it exceeds the maximum queueu time it is time to be archived.
-		//we change thier state by calling exitQueuedState. if we find a vehicle which is in the que for too long
-		//we put it in the archive, and change its internal state. 
-		//queue is a que, ordered, when you reach a vehicle in the que which hasnt been there too long, no need to
-		//look any further (queueu is first in first out).
-		//
+	public void archiveQueueFailures(int time) throws SimulationException, VehicleException {
+		ArrayList<Vehicle> copyOfQueue = new ArrayList<Vehicle>(queue);
+		
+		for(Vehicle newVehicle : copyOfQueue) {
+			exceptionIfNotQueued(newVehicle);
+			exceptionTimeConstraints(maxQueueTime +1, time);
+
+			int timeSpentInQueue = time - newVehicle.getArrivalTime();
+			
+			if(timeSpentInQueue >= Constants.MAXIMUM_QUEUE_TIME) {				
+				exitQueue(newVehicle, time);
+				archive.add(newVehicle);
+				this.numDissatisfied++;
+			}
+		}
 	}
 	
 	/**
@@ -308,7 +317,7 @@ public class CarPark {
 	 * @param intendedDuration int holding intended duration of stay 
 	 * @throws SimulationException if no suitable spaces are available for parking 
 	 * @throws VehicleException if vehicle not in the correct state or timing constraints are violated
-	 * @author Izaac
+	 * @author Steven
 	 */
 	public void parkVehicle(Vehicle v, int time, int intendedDuration) throws SimulationException, VehicleException {
 		vehicleType = getVehicleType(v); //extract vehicle type from vehicle id
@@ -453,7 +462,7 @@ public class CarPark {
 	 * @param time int holding current simulation time 
 	 * @throws SimulationException if no suitable spaces available when parking attempted
 	 * @throws VehicleException if state is incorrect, or timing constraints are violated
-	 * @author Izaac
+	 * @author Steven
 	 */
 	public void processQueue(int time, Simulator sim) throws VehicleException, SimulationException {
 		int duration;
@@ -499,7 +508,7 @@ public class CarPark {
 	 * @throws SimulationException if vehicle is not in queue 
 	 * @throws VehicleException if the vehicle is in an incorrect state or timing 
 	 * constraints are violated
-	 * @author Izaac
+	 * @author Steven
 	 */
 	public void exitQueue(Vehicle v,int exitTime) throws SimulationException, VehicleException {
 		Vehicle exitingVehicle = v;
@@ -507,6 +516,7 @@ public class CarPark {
 		exceptionTimeConstraints(closingTime, exitTime); //exception if exit after close
 		exceptionIfNotQueued(exitingVehicle); //exception is not already in queued state
 		exceptionIfParked(exitingVehicle); //exception if in parked state
+		exceptionIfNotInQueue(exitingVehicle); //exception if not in queue
 		
 		exitingVehicle.exitQueuedState(exitTime); //removing queued state;
 		queue.remove(exitingVehicle); //remove from queue;
@@ -716,7 +726,7 @@ public class CarPark {
 	 * created.
 	 * @param v vehicle to get type of
 	 * @return vehicle type as string
-	 * @author Izaac
+	 * @author Steven
 	 */
 	private String getVehicleType(Vehicle v) {
 		String vehicleType = v.getVehID().substring(0, 1);
@@ -753,6 +763,19 @@ public class CarPark {
 	}
 	
 	/***************************
+	 * Exception when Vehicle is not in Queue.
+	 * @param v
+	 * @throws VehicleException
+	 * @author Steven
+	 ***********************************/
+	private void exceptionIfNotInQueue(Vehicle v) throws SimulationException {
+		Boolean inQueue = queue.contains(v);
+		if (!inQueue) { 
+			throw new SimulationException("Vehicle is not in the queue.");
+		}
+	}
+	
+	/***************************
 	 * Exception when joining a queue that is already full.
 	 * @param v
 	 * @throws VehicleException
@@ -785,9 +808,9 @@ public class CarPark {
 	 * @throws VehicleException
 	 * @author Steven
 	 ***********************************/
-	private void exceptionIfNotQueued(Vehicle v) throws SimulationException {
+	private void exceptionIfNotQueued(Vehicle v) throws VehicleException {
 		if (!v.isQueued()) {
-			throw new SimulationException("The Queue process does not apply to non-qued vehicles");
+			throw new VehicleException("The Queue process does not apply to non-qued vehicles");
 		}
 	}
 	
@@ -797,9 +820,9 @@ public class CarPark {
 	 * @throws VehicleException
 	 * @author Steven
 	 ***********************************/
-	private void exceptionIfQueued(Vehicle v) throws SimulationException {
+	private void exceptionIfQueued(Vehicle v) throws VehicleException {
 		if (v.isQueued()) {
-			throw new SimulationException("Vehicle should not be queued.");
+			throw new VehicleException("Vehicle should not be queued.");
 		}
 	}
 	
@@ -827,4 +850,17 @@ public class CarPark {
 		}
 	}
 
+	/***************************
+	 * Exception if vehicle is not new.
+	 * @param v
+	 * @throws VehicleException
+	 * @author Steven
+	 ***********************************/
+	private void exceptionIfNotNew(Vehicle v) throws SimulationException {
+		if (v.isParked() || v.isQueued()) {
+			throw new SimulationException("The vehicle was either parked or queued, so it is not new.");
+		}
+	}
+	
+	
 }

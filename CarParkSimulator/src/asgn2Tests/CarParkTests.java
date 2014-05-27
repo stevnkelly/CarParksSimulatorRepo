@@ -348,7 +348,7 @@ public class CarParkTests {
 	 * @throws VehicleException
 	 * @author Steven
 	 *******************************************/
-	@Test(expected = SimulationException.class)
+	@Test(expected = VehicleException.class)
 	public void processQueueStateCheck() throws SimulationException, VehicleException {
 		testCarPark.enterQueue(testCar);
 		testCar.exitQueuedState(exitTime);
@@ -418,7 +418,7 @@ public class CarParkTests {
 	 * constraints are violated
 	 * @author Steven
 	 *************************************************/
-	@Test(expected = SimulationException.class)
+	@Test(expected = VehicleException.class)
 	public void exitQueueNotInQueue() throws SimulationException, VehicleException {
 		fillQueue();
 		testCar = new Car("C00", intendedDuration, isSmall);
